@@ -1,0 +1,6 @@
+Size-Name,Data-Disk-Count,Disk-IOPS,Disk-Speed-MBps,Disk-Burst-Speed-MBps,Temp-Storage-Size-GB,Temp-Storage-IOPS,Temp-Storage-Speed-MBps
+Standard_D2_v5,4,3750,40,80,-,-,-
+Standard_D4_v5,8,9999,60,120,-,-,-
+Standard_D8_v5,16,75000,80,160,150,300000,1200
+Standard_D16_v5,32,100000,100,200,200,300000,2000
+Standard_D32_v5,32,9999999,120,240,300,300000,3000

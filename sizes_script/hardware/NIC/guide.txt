@@ -1,0 +1,1 @@
+NIC > [/Architecture] > [/OEM] > [Brand] > Model, Version

@@ -1,0 +1,9 @@
+Size-Name,Accelerator-Count,Accelerator-Memory-GB
+Standard_D2_v5,0.0625,2
+Standard_D4_v5,0.125,4
+Standard_D8_v5,0.25,8
+Standard_D16_v5,1,16
+Standard_D32_v5,2,32
+Standard_D48_v5,4,64
+Standard_D64_v5,8,128
+Standard_D96_v5,8,128

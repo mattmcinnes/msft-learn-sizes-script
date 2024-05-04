@@ -1,0 +1,9 @@
+Size-Name,NIC-Count,Bandwidth-Mbps
+Standard_D2_v5,2,12500
+Standard_D4_v5,2,12500
+Standard_D8_v5,4,12500
+Standard_D16_v5,8,12500
+Standard_D32_v5,8,16000
+Standard_D48_v5,8,24000
+Standard_D64_v5,8,30000
+Standard_D96_v5,8,35000

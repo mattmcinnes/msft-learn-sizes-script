@@ -1,0 +1,6 @@
+Size-Name,vCPUs,Memory-GB
+Standard_D2_v5,2,3.5
+Standard_D4_v5,4,7
+Standard_D8_v5,8,14
+Standard_D16_v5,16,28
+Standard_D32_v5,32,56

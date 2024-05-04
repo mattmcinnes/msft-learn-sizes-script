@@ -1,0 +1,5 @@
+Part-Type,Architecture,OEM,Product-Series,Part-Name,Codename,Specs-Link
+Processor,x86-64,Intel,Xeon,Platinum 8272CL,Ice Lake,https://ark.intel.com
+Temp-Disk,NVMe,-,-,-,-,-
+NIC,Infiniband,Mellanox,Connect-X,4 Lx,-,-
+Accelerator,CUDA,Nvidia,Tesla,P100,Pascal,https://www.nvidia.com/en-us/data-center/
