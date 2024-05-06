@@ -75,9 +75,9 @@ IntroBlock #Display the welcome message
 # WHAT OPERATION IS THE SCRIPT RUNNING
 Write-Host "`nSELECT ACTION`n" -BackgroundColor Blue
 Write-Host "What do you plan on doing with this script?`n"
-Write-Host "    a. Create a new size series"
-Write-Host "    b. Update an existing size series"
-Write-Host "    c. Retire an existing size series"
+Write-Host "    a. Create a new size series" -ForegroundColor Yellow
+Write-Host "    b. Update an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
+Write-Host "    c. Retire an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
 while ($true) {
     $inputLetter = Read-Host "`nEnter the letter of the action you'd like to perform (e.g., 'a' for 'Create a new size series')`n"
     if ($inputLetter -match '^[a-c]$') {
@@ -94,7 +94,7 @@ if ($inputLetter -eq "a") {
     $scriptOperation = "retire"
 }
 $scriptOpIng = $scriptOperation.Substring(0, $scriptOperation.Length - 1) + "ing"
-Write-Host "`nYou're $scriptOpIng a size series."
+Write-Host "`nYou're $scriptOpIng a size series." -ForegroundColor Magenta
 
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
@@ -112,7 +112,7 @@ while ($true) {
         # Double check that the directory exists...
         while ($dirReal -eq $false) {
             if (Test-Path -Path $gitDir) {
-                Write-Host "Default Directory found!"
+                Write-Host "`nDefault Directory found!" -ForegroundColor Green
                 $dirReal = $true
                 break
             } else {
@@ -139,10 +139,10 @@ while ($true) {
         while ($true) {
             $gitDir = Read-Host "Please enter the full path to your Git directory:`n"
             if (Test-Path -Path $gitDir) {
-                Write-Host "Directory found!"
+                Write-Host "Directory found!" -ForegroundColor Green
                 break
             } else {
-                Write-Host "The directory does not exist."
+                Write-Host "ERROR: The directory does not exist." -ForegroundColor Red
             }
         }
         break
@@ -150,7 +150,7 @@ while ($true) {
         $userResponse = Read-Host "Invalid input. Please enter 'y' or 'n'`n"
     }
 }
-Write-Host "`nThe directory is set to: $gitDir"
+Write-Host "`nThe directory is set to: $gitDir" -ForegroundColor Magenta
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
@@ -158,14 +158,14 @@ Clear-Host
 # DEFINE SIZE SERIES TYPE
 Write-Host "SIZE TYPE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
 Write-Host "What type (category) is your size series?`n"
-Write-Host "    a. General-purpose"
-Write-Host "    b. Compute-optimized"
-Write-Host "    c. Memory-optimized"
-Write-Host "    d. Storage-optimized"
-Write-Host "    e. GPU-accelerated"
-Write-Host "    f. FPGA-accelerated"
-Write-Host "    g. High-performance-compute"
-Write-Host "    h. Other"
+Write-Host "    a. General-purpose" -ForegroundColor Yellow
+Write-Host "    b. Compute-optimized" -ForegroundColor Yellow
+Write-Host "    c. Memory-optimized" -ForegroundColor Yellow
+Write-Host "    d. Storage-optimized" -ForegroundColor Yellow
+Write-Host "    e. GPU-accelerated" -ForegroundColor Yellow
+Write-Host "    f. FPGA-accelerated" -ForegroundColor Yellow
+Write-Host "    g. High-performance-compute" -ForegroundColor Yellow
+Write-Host "    h. Other" -ForegroundColor Yellow
 while ($true) {
     if ($testMode -eq $true) {
         TestMode
@@ -176,7 +176,7 @@ while ($true) {
     if ($inputLetter -match '^[a-h]$') {
         break
     } else {
-        Write-Host "`nERROR: Invalid input. Please enter a letter from 'a' to 'h'.`n"
+        Write-Host "`nERROR: Invalid input. Please enter a letter from 'a' to 'h'.`n" -ForegroundColor Red
     }
 }
 
@@ -220,7 +220,7 @@ if ($demoMode -eq $false) {
     $sizesTypeDirectory = "${originalDirectory}\demo"
 }
 ## Let the user know the type they've selected
-Write-Host "`nYou're $scriptOpIng a $seriesTypeFancy type series.`n"
+Write-Host "`nYou're $scriptOpIng a $seriesTypeFancy type series." -ForegroundColor Magenta
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
@@ -237,11 +237,11 @@ foreach ($file in $files) {
     $counter++
     $familyFileTrunk = $file.Name -replace "-family\.md", " family"
     $familyFileTrunk = $familyFileTrunk.Substring(0, 2).ToUpper() + $familyFileTrunk.Substring(2)
-    Write-Host "    $counter. ${familyFileTrunk}"
+    Write-Host "    $counter. ${familyFileTrunk}" -ForegroundColor Yellow
 }
 $maxValidReadEntries = $counter
 $counter++
-Write-Host "    $counter. Other (not listed)"
+Write-Host "    $counter. Other (not listed)" -ForegroundColor Yellow
 
 while ($true) {
     if ($testMode -eq $true) {
@@ -256,7 +256,7 @@ while ($true) {
         Write-Host "`nUNSUPPORTED OPERATION: Please contact a content developer to add a family.`n" -ForegroundColor Red
         return
     } else {
-        Write-Host "`nERROR: Invalid input. Please enter a number from 1 to $counter.`n"
+        Write-Host "`nERROR: Invalid input. Please enter a number from 1 to $counter or 'done'.`n" -ForegroundColor Red
     }
 }
 
@@ -264,7 +264,7 @@ while ($true) {
 $selectedFile = $files[$inputNumber - 1].Name
 $seriesFamily = $selectedFile -replace "-family.md", "" 
 $seriesFamilyUpper = $seriesFamily.ToUpper()
-Write-Host "`nYou're $scriptOpIng a '$seriesFamilyUpper' family, $seriesTypeFancy series.`n"
+Write-Host "`nYou're $scriptOpIng a '$seriesFamilyUpper' family, $seriesTypeFancy series." -ForegroundColor Magenta
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
@@ -290,7 +290,7 @@ while ($validFileSelect -eq $false) {
     }
     while ($seriesValid -eq $false) {
         if ($seriesInput.StartsWith($seriesFamily, [StringComparison]::InvariantCultureIgnoreCase)) {
-            Write-Host "`n$seriesInput is in the $seriesFamilyUpper family.`n"
+            Write-Host "`n$seriesInput is in the $seriesFamilyUpper family.`n" -ForegroundColor Green
             $seriesValid = $true
         } else {
             $seriesInput = Read-Host "`nERROR: $seriesInput does not start with '$seriesFamilyUpper'.`nPlease enter a valid name or restart the script if '$seriesFamilyUpper family' is incorrect.`n"
@@ -311,7 +311,8 @@ while ($validFileSelect -eq $false) {
     $seriesNameLower = $seriesSelected.ToLower()
     $seriesBaseNameLower = $seriesBaseName.ToLower()
 
-    Write-Host "`nYou're now working on: $seriesSelected`ntype: $seriesTypeFancy `n"
+    Write-Host "`nYou're now working on: $seriesSelected" -ForegroundColor Magenta
+    Write-Host "  type: $seriesTypeFancy`n" -ForegroundColor DarkGray
     Read-Host "`nPress Enter to continue`n"
     Clear-Host
 
@@ -327,7 +328,7 @@ while ($validFileSelect -eq $false) {
         foreach ($file in $foundFiles) {
             Write-Host "File found: $($file.Name)"
             if ($scriptOperation -eq "create") {
-                Write-Host "`nERROR: The $seriesFileName file already exists. Please choose a different series name or update the existing series...`n"
+                Write-Host "`nERROR: The $seriesFileName file already exists. Please choose a different series name or update the existing series...`n" -ForegroundColor Red
                 $validFileSelect = $false
             } elseif ($scriptOperation -eq "update") {
                 Write-Host "The file exists and will be updated."
@@ -342,7 +343,7 @@ while ($validFileSelect -eq $false) {
         if ($scriptOperation -eq "create") {
             $validFileSelect = $true
         } else {
-            Write-Host "`nERROR: No file named '$seriesFileName' found. Please choose a different series name or create a new series...`n"
+            Write-Host "`nERROR: No file named '$seriesFileName' found. Please choose a different series name or create a new series...`n" -ForegroundColor Red
             $validFileSelect = $false
         }
     }     
@@ -445,8 +446,8 @@ if ($scriptOperation -eq "create") {
     $hwHasPartMEM = $false; if ($testMode -eq $true) { $hwHasPartMEM = $true }
     $hwHasPartNIC = $false; if ($testMode -eq $true) { $hwHasPartNIC = $true }
     $hwHasPartGPU = $false; if ($testMode -eq $true) { $hwHasPartGPU = $true }
-    $hwHasPartNPU = $false; if ($testMode -eq $true) { $hwHasPartNPU = $true }
-    $hwHasPartFPGA = $false; if ($testMode -eq $true) { $hwHasPartFPGA = $true }
+    $hwHasPartNPU = $false; if ($testMode -eq $true) { $hwHasPartNPU = $false }
+    $hwHasPartFPGA = $false; if ($testMode -eq $true) { $hwHasPartFPGA = $false }
 
 
 
@@ -483,14 +484,35 @@ if ($scriptOperation -eq "create") {
             $validInput = $true
             $showMessage = $true
             if ($hwHasPartGPU -eq $true) { $hwHasPartGPU = $false ; $messageText = "GPU no longer present"} else { $hwHasPartGPU = $true ; $messageText = "GPU now present" }
+            if ($hwHasPartGPU -eq $false -and $hwHasPartNPU -eq $false -and $hwHasPartFPGA -eq $false) {$acceleratorPresent = $false} else {$acceleratorPresent = $true}
+            if ($hwHasPartGPU -eq $true -and ($hwHasPartNPU -eq $true -or $hwHasPartFPGA -eq $true)) { 
+                $errorMessage = "Only one accelerator type can be present at a time. Please disable the other accelerator types before enabling this one.`nIf this size does have multiple accelerators, please contact the content dev team to add this functionality."
+                $hwHasPartGPU = $false
+                $validInput = $false
+                $showMessage = $false
+            }
         } elseif ($userResponse -eq "4") {
             $validInput = $true
             $showMessage = $true
             if ($hwHasPartNPU -eq $true) { $hwHasPartNPU = $false ; $messageText = "NPU no longer present"} else { $hwHasPartNPU = $true ; $messageText = "NPU now present"}
+            if ($hwHasPartGPU -eq $false -and $hwHasPartNPU -eq $false -and $hwHasPartFPGA -eq $false) {$acceleratorPresent = $false} else {$acceleratorPresent = $true}
+            if ($hwHasPartNPU -eq $true -and ($hwHasPartGPU -eq $true -or $hwHasPartFPGA -eq $true)) { 
+                $errorMessage = "Only one accelerator type can be present at a time. Please disable the other accelerator types before enabling this one.`nIf this size does have multiple accelerators, please contact the content dev team to add this functionality."
+                $hwHasPartNPU = $false
+                $validInput = $false
+                $showMessage = $false
+            }
         } elseif ($userResponse -eq "5") {
             $validInput = $true
             $showMessage = $true
             if ($hwHasPartFPGA -eq $true) { $hwHasPartFPGA = $false ; $messageText = "FPGA no longer present"} else { $hwHasPartFPGA = $true ; $messageText = "FPGA now present"}
+            if ($hwHasPartGPU -eq $false -and $hwHasPartNPU -eq $false -and $hwHasPartFPGA -eq $false) {$acceleratorPresent = $false} else {$acceleratorPresent = $true}
+            if ($hwHasPartFPGA -eq $true -and ($hwHasPartNPU -eq $true -or $hwHasPartGPU -eq $true)) { 
+                $errorMessage = "Only one accelerator type can be present at a time. Please disable the other accelerator types before enabling this one.`nIf this size does have multiple accelerators, please contact the content dev team to add this functionality."
+                $hwHasPartFPGA = $false
+                $validInput = $false
+                $showMessage = $false
+            }
         } elseif ($userResponse -eq "done") {
             $validInput = $true
             $showMessage = $false
@@ -499,7 +521,7 @@ if ($scriptOperation -eq "create") {
             if ($testMode -eq $true) {
                 $validInput = $true
                 $showMessage = $false
-                Write-Host "Test mode is enabled. Setting all to present..."
+                Write-Host "Test mode is enabled. Setting all to present and accelerator to GPU..."
                 Read-Host "`nPress Enter to continue`n"
                 break
             } else { 
@@ -774,7 +796,7 @@ if ($scriptOperation -eq "create") {
     $processorSKU = "${hwOem} ${hwBrand} ${hwModelCopy} (${hwArch})"
 
 
-<#
+    <#
     # Memory Info
     if ($hwHasPartMEM -eq $true) {
         $hwModel = $null
@@ -831,8 +853,8 @@ if ($scriptOperation -eq "create") {
     }
 
 
-#>
-<#
+    #>
+    <#
 
     #Accelerator Select
     if ($hwHasPartGPU -eq $true -or $hwHasPartNPU -eq $true -or $hwHasPartFPGA -eq $true) {
@@ -905,150 +927,134 @@ if ($scriptOperation -eq "create") {
     }
 
 
-#>
+    #>
 
 
-    # DATA INPUT TIME
-    Clear-Host
-    $instructionsTitle = "INDIVIDUAL SIZE NAMES"
-    $instructionsModeTitle = "${scriptModeTitle}`n"
-    $instructionsSizeInput = "Now we'll enter the data for the $seriesBaseName series' individual size names.
-
-  INSTRUCTIONS: 
-    - Fill out the file with relevant data using a text editor (default for this script is Notepad).
-    - Replace the '<example#>' text with each size name, and add more lines when needed.
-    - Don't add spaces, commas, or other special characters to the size names. 
-    - Size names should follow the <Qualifier>_<Type><Specs>_v<Version> format (e.g., Standard_D8_v3).
-    - Save the file when you're done! Otherwise you'll end up with errors...
-
-Type 'n' to open the file in Notepad.exe
-Type 'x' to open the file in Excel.exe
-Type 'f' to open the containing folder in explorer.exe
-Type 'e' to view an example
-Type 'done' when you've finished entering data in the file to continue
-:"
-    Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-    Write-Host $instructionsModeTitle -ForegroundColor Green
-    Write-Host $instructionsSizeInput -NoNewline
+    # SIZE NAME INPUT
+    $showMessage = $false
     while ($true) {
+        Clear-Host
+        Write-Host "INDIVIDUAL SIZE NAMES" -BackgroundColor Blue -NoNewline
+        Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+        Write-Host "Now we'll enter the data for the $seriesBaseName series' individual size names.`n"
+
+        Write-Host "  INSTRUCTIONS:" -ForegroundColor DarkGray
+        Write-Host "    - Fill out the file with relevant data using a text editor (default for this script is Notepad)."
+        Write-Host "    - Replace the '<example#>' text with each size name, and add more lines when needed."
+        Write-Host "    - Don't add spaces, commas, or other special characters to the size names."
+        Write-Host "    - Size names should follow the <Qualifier>_<Type><Specs>_v<Version> format (e.g., Standard_D8_v3)."
+        Write-Host "    - Save the file when you're done! Otherwise you'll end up with errors..."
+
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+
+        Write-Host "Type 'n' to open the file in Notepad.exe"
+        Write-Host "Type 'x' to open the file in Excel.exe"
+        Write-Host "Type 'f' to open the containing folder in explorer.exe"
+        Write-Host "Type 'e' to view an example"
+        Write-Host "Type 'done' when you've finished entering data in the file to continue"
+
         if ($testMode -eq $true) {
             Read-Host "`nTest Mode Enabled, press Enter to continue`n"
             $userResponse = "done"
         } else {
             $userResponse = Read-Host
         }
+        
         if ($userResponse -eq "f") {
             Start-Process "explorer.exe" -ArgumentList "$inputDirectory"
             Write-Host "`nOpening explorer.exe" -NoNewline
             DelayDots
-            Clear-Host
-            Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-            Write-Host $instructionsModeTitle -ForegroundColor Green
-            Write-Host $instructionsSizeInput -NoNewline
         } elseif ($userResponse -eq "n") {
             Start-Process "notepad.exe" -ArgumentList $sizesNamesListINPUTPath
             Write-Host "`nOpening notepad.exe" -NoNewline
             DelayDots
-            Clear-Host
-            Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-            Write-Host $instructionsModeTitle -ForegroundColor Green
-            Write-Host $instructionsSizeInput -NoNewline
         } elseif ($userResponse -eq "x") {
             Start-Process "excel.exe" -ArgumentList "`"$sizesNamesListINPUTPath`""
             Write-Host "`nOpening excel.exe" -NoNewline
             DelayDots
-            Clear-Host
-            Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-            Write-Host $instructionsModeTitle -ForegroundColor Green
-            Write-Host $instructionsSizeInput -NoNewline
         } elseif ($userResponse -eq "e") {
             $csvData = Import-Csv -Path "$examplesDirectory\example-sizes-name-list.csv"
             Write-Host "`nHere's an example of the file content:`n"
-            Write-Host "Size-Name"
+            Write-Host "  Size-Name" -ForegroundColor DarkGray
             foreach ($row in $csvData) {
+                Write-Host "  " -NoNewline
                 Write-Host $row."Size-Name"
             }
             Read-Host "`nPress Enter to continue`n"
-            Clear-Host
-            Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-            Write-Host $instructionsModeTitle -ForegroundColor Green
-            Write-Host $instructionsSizeInput -NoNewline
         } elseif ($userResponse -eq "done") {
             $sizesNamesListTemplatePath = "$templateDirectory\temp-sizes-name-list.csv"
             $sizesNamesListTemplateContent = Get-Content -Path $sizesNamesListTemplatePath -Raw
             $sizesNamesListNewContent = Get-Content -Path $sizesNamesListINPUTPath -Raw
+            $csvData = Import-Csv -Path $sizesNamesListINPUTPath
             if ($sizesNamesListNewContent -eq $sizesNamesListTemplateContent) {
                 if ($testMode -eq $true) {
-                    Write-Host "`nThe file looks the same, but you're in testing mode. The script will now continue`n"
+                    $validInput = $true
+                    $showMessage = $true
+                    $messageText = "The file looks the same, but you're in testing mode. The script will now continue"
                     break
                 } else {
-                    Write-Host "`nThe file looks the same, did you not edit the default values and/or forget to save?"
-                    Read-Host "`nPress Enter to continue...`n"
-                    Clear-Host
-                    Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-                    Write-Host $instructionsModeTitle -ForegroundColor Green
-                    Write-Host $instructionsSizeInput -NoNewline
+                    $validInput = $false
+                    $showMessage = $false
+                    $errorMessage = "The file looks the same, did you not edit the default values and/or forget to save?"
                 }
+            } elseif ('Size-Name' -notin $csvData[0].PSObject.Properties.Name) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "The required column 'Size-Name' does not exist in the CSV data. Did you remove or edit the header line?"
             } else {
-                Clear-Host
-                $csvData = Import-Csv -Path $sizesNamesListINPUTPath
-                $subInstructionsTitle = " - REVIEW"
-                $subInstructionsModeTitle = "${scriptModeTitle}`n"
-                Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-                Write-Host $subInstructionsTitle -ForegroundColor Yellow -NoNewline
-                Write-Host $subInstructionsModeTitle -ForegroundColor Green
-                if ('Size-Name' -notin $csvData[0].PSObject.Properties.Name) {
-                    Write-Host "ERROR: The required column 'Size-Name' does not exist in the CSV data. Did you remove or edit the header line?" -ForegroundColor Red
-                    Read-Host "`nPress Enter to continue`n"
-                    Clear-Host
-                    Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-                    Write-Host $instructionsModeTitle -ForegroundColor Green
-                    Write-Host $instructionsSizeInput -NoNewline
-                } else {
-                    Write-Host "The file has been edited! Here are the series names you've entered:`n"
-                    foreach ($row in $csvData) {
-                        Write-Host $row."Size-Name"
-                    }
-                    Write-Host "`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Red
-                    Write-Host "NOTE: If you continue while the file is still open, you will encounter errors and the script will fail!`n" -ForegroundColor DarkYellow
-                    Write-Host "If these values look good, enter 'y' to continue. If you'd like to go back to the edit mode menu, press Enter`n:" -NoNewline
-                    if ($testMode -eq $true) {
-                        Read-Host "`nTest Mode Enabled, press Enter to continue`n"
-                        $userResponse = "y"
-                    } else {
-                        $userResponse = Read-Host
-                    }
-                    if ($userResponse -eq "y") {
-                        break
-                    } else {
-                        while ($true) {
-                            Write-Host "`nInvalid input. enter 'y' or 'b'`n:"
-                            $userResponse = Read-Host
-                            if ($userResponse -eq "y") {
-                                break
-                            } elseif ($userResponse -eq "b") {
-                                Clear-Host
-                                Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-                                Write-Host $instructionsModeTitle -ForegroundColor Green
-                                Write-Host $instructionsSizeInput -NoNewline
-                                break
-                            }
-                        }
-                        if ($userResponse -eq "y") {
-                            break
-                        }
-                    }
-                }
+                $validInput = $true
+                $showMessage = $false
+                $messageText = "The file has been edited and saved successfully!"
+                break
             }
         } else {
-            Write-Host "`nInvalid input. Please type 'n' to open the file in Notepad or 'e' to open the containing folder in Explorer."
-            Read-Host "`nPress Enter to continue...`n"
-            Clear-Host
-            Write-Host $instructionsTitle -BackgroundColor Blue -NoNewline
-            Write-Host $instructionsModeTitle -ForegroundColor Green
-            Write-Host $instructionsSizeInput -NoNewline
+            $validInput = $false
+            $showMessage = $false
+            $errorMessage = "Invalid input. Please type 'n', 'x', 'f', 'e', or 'done'."
         }
     }
+
+    ## REVIEW SIZE NAMES
+    $showMessage = $false
+    while ($true) {
+        $csvData = Import-Csv -Path $sizesNamesListINPUTPath
+        Clear-Host
+        Write-Host "INDIVIDUAL SIZE NAMES" -BackgroundColor Blue -NoNewline; Write-Host " - REVIEW" -ForegroundColor Blue -NoNewline;
+        Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+
+        Write-Host "The file has been edited! Here are the series names you've entered:`n"
+        Write-Host "  Size-Name" -ForegroundColor DarkGray
+        foreach ($row in $csvData) {
+            Write-Host "    - " -NoNewline
+            Write-Host $row."Size-Name"
+        }
+        Write-Host "`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Red
+        Write-Host "NOTE: If you continue while the file is still open, you will encounter errors and the script will fail!`n" -ForegroundColor DarkYellow
+        Write-Host "If there's an issue with these series names, press 'n' to open the file in notepad and make edits.`nIf these series names look good, press Enter to continue.'`n:" -NoNewline
+        if ($testMode -eq $true) {
+            Read-Host "`nTest Mode Enabled, press Enter to continue`n"
+            $userResponse = ""
+            break
+        } else {
+            $userResponse = Read-Host
+            if ($userResponse -eq "") {
+                break
+            } elseif ($userResponse -eq "n") {
+                $validInput = $true
+                $showMessage = $false
+                Write-Host "`nOpening notepad.exe" -NoNewline
+                Start-Process "notepad.exe" -ArgumentList $sizesNamesListINPUTPath
+                DelayDots
+            } else {
+                $validInput = $false
+                $showMessage = false
+                $errorMessage = "Invalid input. Please enter 'n' or 'done'." 
+            }
+        }
+    }
+    
 
     # Combine the CSVs (Name Input and Category Templates), Write the combined files to INPUT and TEMP directories
     $sizesListCsvPath = $sizesNamesListINPUTPath
@@ -1154,7 +1160,7 @@ Type 'done' when you've finished entering data in the file to continue
 
 
 
-    # DATA INPUT TIME PT.1
+    # WRITE THE DATA
 
     ##Set initial file status
     $global:currentFileStatus = "(not edited)"
@@ -1186,14 +1192,17 @@ Type 'done' when you've finished entering data in the file to continue
         Write-Host "SPECIFICATIONS INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "Now we'll enter the data for the ${seriesBaseName} series' specs.`n"
         Write-Host "Fill out the following INPUT .csv files (comma-deliniated) with relevant data using Excel or a text editor:`n"
-        Write-Host "    1. $specsCpuMemoryINPUTLocalPath    $global:fileStatus1"
-        Write-Host "    2. $specsStorageINPUTLocalPath       $global:fileStatus2"
-        Write-Host "    3. $specsNetworkINPUTLocalPath       $global:fileStatus3"
+        Write-Host "  1. CPU and Memory specs " -NoNewLine; if ($global:fileStatus1 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus1" -ForegroundColor Green } else { Write-Host "$global:fileStatus1" -ForegroundColor Yellow }
+        Write-Host "    $specsCpuMemoryINPUTLocalPath" -ForegroundColor DarkGray
+        Write-Host "  2. Storage specs        " -NoNewLine; if ($global:fileStatus2 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus2" -ForegroundColor Green } else { Write-Host "$global:fileStatus2" -ForegroundColor Yellow }
+        Write-Host "    $specsStorageINPUTLocalPath" -ForegroundColor DarkGray
+        Write-Host "  3. Network specs        " -NoNewLine; if ($global:fileStatus3 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus3" -ForegroundColor Green } else { Write-Host "$global:fileStatus3" -ForegroundColor Yellow }
+        Write-Host "    $specsNetworkINPUTLocalPath" -ForegroundColor DarkGray
         if ($acceleratorPresent -eq $true) {
-            Write-Host "    4. $specsAcceleratorsINPUTLocalPath  $global:fileStatus4"
+            Write-Host "4. Accelerator specs  " -NoNewline; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
+            Write-Host "    $specsAcceleratorsINPUTLocalPath" -ForegroundColor DarkGray
         }
-        Write-Host "`nNOTE: If there is no data for a value (for example, if there is no temp disk, therefore there is no Temp-disk-size-GB data) leave the cells empty.`nFilling the cells with a '-' or '0' will render incorrectly" -ForegroundColor DarkYellow
-        Write-Host "`nEnter numbers '1 - 4' to open the corresponding file in Excel `nEnter 'f' to open the INPUT directory in Explorer `nEnter 'e' to view an example `nType 'r' to refresh the edit status `nType 'done' when you've finished entering data in all files to continue`n:" -NoNewline
+        Write-Host "`nNOTE: If there is no data for a specific value, leave the cell empty.`nFilling the cells with a '-' or '0' will render incorrectly" -ForegroundColor DarkYellow
     }
 
 
@@ -1254,10 +1263,16 @@ Type 'done' when you've finished entering data in the file to continue
     
 
     ## Input Loop
+    $validInput = $true
+    $showMessage = $false
     Clear-Host
     RenderDataInputStatus
-    $done = $false
-    while ($done -eq $false) {
+    while ($true) {
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+
+        Write-Host "Enter numbers '1 - 4' to open the corresponding file in Excel `nEnter 'f' to open the INPUT directory in Explorer `nEnter 'e' to view an example `nType 'r' to refresh the edit status `nType 'done' when you've finished entering data in all files to continue`n:" -NoNewline
         if ($testMode -eq $true) {
             Read-Host "`nTest Mode Enabled, press Enter to continue`n"
             $userResponse = "done"
@@ -1357,29 +1372,28 @@ Type 'done' when you've finished entering data in the file to continue
                 $global:fileStatus4 = $global:fileStatusEdited
             }
             if ($global:fileStatus1 -ne $global:fileStatusEdited -or $global:fileStatus2 -ne $global:fileStatusEdited -or $global:fileStatus3 -ne $global:fileStatusEdited -or $global:fileStatus4 -ne $global:fileStatusEdited) {
-                Write-Host "`nWARNING: You haven't edited all the files." -NoNewline -ForegroundColor Red
+                $validInput = $false
+                $errorMessage = "You haven't edited all the files.`nMake sure to open all files and enter the necessary data before continuing."
                 if ($testMode -eq $true) {
                     Write-Host "`nTesting mode is enabled. The script will continue despite the warning." -NoNewline
                     Clear-Host
                     break
-                } else {
-                    Write-Host "`nMake sure to open all files and enter the necessary data before continuing." -NoNewline
-                    DelayDots
                 }
                 CompareAllContent
                 Clear-Host
                 RenderDataInputStatus
             } else {
-                Write-Host "`nAll files have been edited!" -NoNewline
+                Write-Host "`nAll files have been edited!" -ForegroundColor Green
                 Write-Host "`nWARNING: Make sure to close all editors before continuing. `nIf you continue while the files are still open, you will encounter errors and the script will fail!" -ForegroundColor Red
                 Read-Host "`nAfter ensuring all editor windows are closed, press Enter to continue`n"
                 Clear-Host
-                $done = $true
+                break
             }
         } else {
             Clear-Host
             RenderDataInputStatus
-            Write-Host "`nInvalid input. Please enter 1 - 4, 'e', or type 'done'."
+            $validInput = $false
+            $errorMessage = "Invalid input. Please enter 1 - 4, 'e', or type 'done'."
         }
     }
 
@@ -1388,24 +1402,27 @@ Type 'done' when you've finished entering data in the file to continue
     New-Item -Path "$inputDirectory\INPUT-summary.txt" -ItemType File
     $summaryINPUTPath = "$inputDirectory\INPUT-summary.txt"
 
-    ## Input Loop
-    $done = $false
-    $invalidInput = $false
-    while ($done -eq $false) {
+    $showMessage = $false
+    $validInput = $true
+    while ($true) {
         Clear-Host
         Write-Host "SUMMARY INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "Now we'll enter the data for the ${seriesBaseName} series' summary.`n"
-        Write-Host "Fill out the INPUT-summary_${seriesBaseName}-series.txt file with the size series' summary.`nMake sure the summary is a single paragraph of plain text."
-        Write-Host "`nEnter 'n' to open the file in Notepad.exe.`nEnter 'f' to open the directory in Explorer.exe.`nEnter 'e' to view an example.`nEnter 'done' when you've finished entering data in the file to continue."
-        if ($invalidInput -eq $true) {
-            Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Red
-        }
+        Write-Host "Fill out the " -NoNewLine; Write-Host "INPUT-summary_${seriesBaseName}-series.txt" -NoNewLine -ForegroundColor Yellow; Write-Host " file with the size series' summary.`nMake sure the summary is a single paragraph of plain text."
+
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+
+        Write-Host "Enter 'n' to open the file in Notepad.exe.`nEnter 'f' to open the directory in Explorer.exe.`nEnter 'e' to view an example.`nEnter 'done' when you've finished entering data in the file to continue."
+
         if ($testMode -eq $true) {
             Read-Host "`nTest Mode Enabled, press Enter to continue`n"
-            $userResponse = "done"
+            break
         } else {
             $userResponse = Read-Host
         }
+
         if ($userResponse -eq "n") {
             Start-Process "notepad.exe" -ArgumentList "$summaryINPUTPath"
             Write-Host "`nOpening notepad.exe" -NoNewline
@@ -1434,32 +1451,45 @@ Type 'done' when you've finished entering data in the file to continue
             if ($summaryNewContent -eq $summaryNoData) {
                 if ($testMode -eq $true) {
                     Write-Host "`nThe file looks empty, but you're in testing mode. The script will now continue`n"
-                    $done = $true
+                    break
                 } else {
-                    Write-Host "`nThe file looks empty, did you not edit the file and/or forget to save?"
-                    Read-Host "`nPress Enter to continue...`n"
+                    $validInput = $false
+                    $errorMessage = "The file looks empty, did you not edit the file and/or forget to save?"
                 }
             } else {
-                Write-Host "The file has been edited! Here's the content you've entered:`n"
-                $summaryNewContent
-                Write-Host "`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Red
-                Write-Host "NOTE: If you continue while the file is still open, you will encounter errors and the script will fail!`n" -ForegroundColor DarkYellow
-                Write-Host "If this content looks good, enter 'y' to continue. If you'd like to go back to the edit mode menu, press Enter`n:" -NoNewline
-                if ($testMode -eq $true) {
-                    Read-Host "`nTest Mode Enabled, press Enter to continue`n"
-                    $userResponse = "y"
-                } else {
-                    $userResponse = Read-Host
-                }
-                if ($userResponse -eq "y") {
-                    $done = $true
-                }
+                break
             }
         } else {
-            $invalidInput = $true
+            $validInput = $false
+            $errorMessage = "Invalid input. Please type 'n', 'f', 'e', or 'done'."
         }
     }
-    $invalidInput = $false
+
+
+
+    # SUMMARY REVIEW
+    $showMessage = $false
+    $validInput = $true
+    while ($true) {
+        Clear-Host
+        Write-Host "SUMMARY INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+        Write-Host "The file has been edited! Here's the content you've entered:`n"
+        Write-Host "  ${seriesSelected} Summary:" -ForegroundColor DarkGray
+        Write-Host "    $summaryNewContent"
+        Write-Host "`n`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Red
+        Write-Host "NOTE: If you continue while the file is still open, you will encounter errors and the script will fail!`n" -ForegroundColor DarkYellow
+        Write-Host "If this content looks good, press 'Enter' to continue."
+        if ($testMode -eq $true) {
+            Read-Host "`nTest Mode Enabled, press Enter to continue`n"
+            $userResponse = ""
+        } else {
+            $userResponse = Read-Host
+        }
+
+        if ($userResponse -eq "") {
+            break
+        }
+    }
 
 
 } elseif ($scriptOperation -eq "update") {
@@ -1471,7 +1501,7 @@ Type 'done' when you've finished entering data in the file to continue
     Write-Host "ERROR: Sorry, this script is not yet built to retire files...`nPlease restart the script and select a different operation." -ForegroundColor Red
     return
 } else {
-    Write-Host "ERROR: Something went wrong. Please restart the script."
+    Write-Host "ERROR: Something went wrong... Please restart the script." -ForegroundColor Red
     return
 }
 
@@ -1495,8 +1525,6 @@ foreach ($row in $csvData) {
     Write-Host "    - " -NoNewline
     Write-Host $row."Size-Name"
 }
-Write-Host "`n  Git info:" -ForegroundColor DarkGray
-Write-Host "    - Branch: $branchName"
 Read-Host "If there's an issue in any of this content, restart the script.`nIf everything looks good, press Enter to continue.`n"
 Clear-Host
 
@@ -1587,52 +1615,49 @@ while ($true) {
     Write-Host "  Files being created:" -ForegroundColor DarkGray
     Write-Host "    - " -NoNewLine; Write-Host "${createArticleStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Size series article: ${seriesBaseNameLower}-series.md"
     Write-Host "    - " -NoNewLine; Write-Host "${createSummaryStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Summary include: ${seriesBaseNameLower}-series-summary.md"
-    Write-Host "    - " -NoNewline; Write-Host "${createSpecsStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Specs include: ${seriesBaseNameLower}-series-specs" #HAVENT DONE THIS PART YET!!
-    Write-Host "`nEnter a number '1' - '3' to disable a file's creation. Enter 'y' to continue creating all enabled files.`n"
-    if ($invalidInput -eq $true) {
-        Write-Host "ERROR: Invalid input.`n" -ForegroundColor Red
-    }
+    Write-Host "    - " -NoNewline; Write-Host "${createSpecsStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Specs include: ${seriesBaseNameLower}-series-specs"
+
+    if ($invalidInput -eq $true) { Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Red }
+    if ($showMessage -eq $true) { Write-Host "`n$showMessageContent`n" -ForegroundColor Magenta }
+    if ($showMessage -eq $false -and $invalidInput -eq $false) { Write-Host "`n`n" }
+
+    Write-Host "Enter a number '1' - '3' to disable a file's creation.`nEnter 'done' to continue creating all enabled files.`n"
+
     $userResponse = Read-Host
     if ($userResponse -eq "1") {
         if ($doCreateArticle -eq $true) {
             $createArticleStatus = "[Disabled] "
             $doCreateArticle = $false
-            Write-Host "`nSize series article creation has been disabled."
-            Read-Host "`nPress Enter to continue`n"
+            $showMessageContent = "`nSize series article creation has been disabled."
         } elseif ($doCreateArticle -eq $false) {
             $createArticleStatus = ""
             $doCreateArticle = $true
-            Write-Host "`nSize series article creation has been re-enabled."
-            Read-Host "`nPress Enter to continue`n"
+            $showMessageContent = "`nSize series article creation has been re-enabled."
         }
         Clear-Host
     } elseif ($userResponse -eq "2") {
         if ($doCreateSummary -eq $true) {
             $createSummaryStatus = "[Disabled] "
             $doCreateSummary = $false
-            Write-Host "`nSize summary include creation has been disabled."
-            Read-Host "`nPress Enter to continue`n"
+            $showMessageContent = "`nSize summary include creation has been disabled."
         } elseif ($doCreateSummary -eq $false) {
             $createSummaryStatus = ""
             $doCreateSummary = $true
-            Write-Host "`nSize summary include creation has been re-enabled."
-            Read-Host "`nPress Enter to continue`n"
+            $showMessageContent = "`nSize summary include creation has been re-enabled."
         }
         Clear-Host
     } elseif ($userResponse -eq "3") {
         if ($doCreateSpecs -eq $true) {
             $createSpecsStatus = "[Disabled] "
             $doCreateSpecs = $false
-            Write-Host "`nSize specs include creation has been disabled."
-            Read-Host "`nPress Enter to continue`n"
+            $showMessageContent = "`nSize specs include creation has been disabled."
         } elseif ($doCreateSpecs -eq $false) {
             $createSpecsStatus = ""
             $doCreateSpecs = $true
-            Write-Host "`nSize specs include creation has been re-enabled."
-            Read-Host "`nPress Enter to continue`n"
+            $showMessageContent = "`nSize specs include creation has been re-enabled."
         }
         Clear-Host
-    } elseif ($userResponse -eq "y") {
+    } elseif ($userResponse -eq "done") {
         Write-Host "`nCreating files:"
         break
     } else {
@@ -1715,6 +1740,7 @@ if ($doCreateSummary -eq $true) {
     # Create the summary file
     $summaryContent = Get-Content -Path "$templateDirectory\temp-summary.md" -Raw
     $summaryContent = $summaryContent -replace "SERIESNAME", $seriesBaseName
+    $summaryContent = $summaryContent -replace "SUMMARYTEXTINPUT", $summaryNewContent
     $summaryContent | Set-Content -Path $seriesSummaryOutputPath
 }
 if ($doCreateSpecs -eq $true) {
@@ -1743,12 +1769,12 @@ if ($doCreateSpecs -eq $true) {
         $specsContent = $specsContent -replace "ACCELDATA", ""
     }
     ## Output new file to the OUTPUT directory
-    $specsContent | Set-Content -Path $seriesFileOutputPath
+    $specsContent | Set-Content -Path $seriesSpecsOutputPath
 
     
 }
 
-Write-Host "`nAll files have been created!`n"
+Write-Host "`nAll files have been created!`n" -ForegroundColor Green
 Write-Host "Enter 'f' to open the OUTPUT folder and view the files or Press Enter to continue`n"
 $userResponse = Read-Host
 if ($userResponse -eq "f") {
@@ -1767,7 +1793,7 @@ if ($userResponse -eq "f") {
 Clear-Host
 Write-Host "GIT OPERATIONS" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
 Write-Host "Before continuing, we'll create a new branch for this script to utilize.`nThis will run several git commands, so make sure you don't have any unsaved work in an open branch.`nAny unsaved work will be stashed."
-Read-Host "`nPress Enter to run git operations..."
+Read-Host "`nPress Enter to run git operations.`n"
 
 ## Make sure the user has a valid branch, then check out to it.
 Set-Location $gitDir
