@@ -1,0 +1,15 @@
+Feature-Name,Support-Level,Support-Data
+Premium Storage,Full,
+Premium Storage Caching,None,
+Generation 2 VMs,Partial,Generation 2 only
+Ephemeral OS Disk,Full,
+Live Migration,Full,
+Memory Preserving Updates,Full,
+Accelerated Networking,Partial,MANA
+Nested Virtualization,Partial,One layer only
+Live Migration,Full,
+Generation 1 VMs,Full,
+Ultra Disks,None,
+Standard SSD,None,
+Standard HDD,None,
+Premium SSD v2,None,
