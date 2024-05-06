@@ -35,8 +35,12 @@ A script to create, modify, or retire Azure virtual machine sizes using the new 
 - Compatibility with "The great divide" project
 - SR-IOV flags for accelerators (what % of the accelerator do you have access to)
 - Notation of software stack compatibility (CUDA, ROCM, AVX512, etc.)
+- Pull data from REST API for preview
+- Pull data from REST API for auto-population of data
+- Split code into seperate module files (current file is nearly 2000 lines of code!)
  
 ## Potential features
 - Docs build preview integration
 - Auto batch runs (to keep docs perpetually up to date)
 - Support for Linux (currently calls Windows programs such as notepad and excel)
+- Official repo for CSV files (single source of truth, could be called by API in the future)
