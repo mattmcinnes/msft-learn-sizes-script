@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Alpha 0.0"
+$scriptVersion = "Alpha 0.4"
 
 ## Test mode
 $testMode = $false
@@ -554,7 +554,7 @@ if ($scriptOperation -eq "create") {
             }
             $maxValidReadEntries = $counter
             $counter++
-            Write-Host "    $counter. Other"
+            Write-Host "     $counter. Other"
             break
         }
         if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
@@ -1418,7 +1418,9 @@ if ($scriptOperation -eq "create") {
         if ($acceleratorPresent -eq $true) {
             Write-Host "  4. Accelerator specs    " -NoNewline; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
             Write-Host "    $specsAcceleratorsINPUTLocalPath" -ForegroundColor DarkGray
-            Write-Host "`nNOTE on Accelerators: The 'Accelerator-Memory-GB section is based on the total memory buffer available to the VM, not the memory per hardware device.`nFor example, if you have 3x 4GB GPUs, you would have 12GB of memory buffer available to the VM." -ForegroundColor DarkYellow
+            Write-Host "`nNOTE (Accelerators): The 'Accelerator-Memory-GB section is based on the total memory buffer available to the VM, not the memory per hardware device.`nFor example, if you have 3x 4GB GPUs, you would have 12GB of memory buffer available to the VM." -ForegroundColor DarkYellow
+        } else {
+            $global:fileStatus4 = $global:fileStatusEdited
         }
         Write-Host "`nNOTE: If there is no data for a specific value, leave the cell empty.`nFilling the cells with a '-' or '0' will render incorrectly" -ForegroundColor DarkYellow
     }
@@ -1774,7 +1776,7 @@ Write-Host "CONTENT REVIEW" -BackgroundColor Blue -NoNewline; Write-Host " - Pag
 Write-Host "Let's go through the tables for the $seriesSelected series.`nHere's the information we have:`n"
 #CPU and Memory
 Write-Host "  CPU and Memory:" -ForegroundColor DarkGray
-Write-Host "    $processorSKU"
+Write-Host "    $processorSKU CPU" 
 $global:csvPath = $specsCpuMemoryInputPath; $global:csvColumn = "vCPUs"; CsvFirstandLastImport
 Write-Host "     - vCPUs (vCores): $dataRange"; $specAggCPUCores = $dataRange
 $global:csvPath = $specsCpuMemoryInputPath; $global:csvColumn = "Memory-GB"; CsvFirstandLastImport
@@ -2073,6 +2075,12 @@ if ($testMode -eq $false) {
 # GIT OPERATIONS (pt.2)
 Clear-Host
 Write-Host "PUBLISH PULL REQUEST" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+
+Write-Host "Now that the files have been created and the branch has been created, we'll push the branch to the repository and create a pull request.`n"
+
+Write-Host "This is currently disabled since the script is on version $scriptVersion. Feature will be enabled in the beta release.`n"
+
+Write-Host "Please manually add the files from the OUTPUT directory to your branch and create a PR via the git CLI...`n"
 
 
 
