@@ -794,6 +794,10 @@ if ($scriptOperation -eq "create") {
 
     #FINAL INFO FOR WRITING
     $processorSKU = "${hwOem} ${hwBrand} ${hwModelCopy} (${hwArch})"
+    $cpuOem = $hwOem
+    $cpuBrand = $hwBrand
+    $cpuModel = $hwModel
+    $cpuArch = $hwArch
 
 
     <#
@@ -854,31 +858,43 @@ if ($scriptOperation -eq "create") {
 
 
     #>
-    <#
 
-    #Accelerator Select
-    if ($hwHasPartGPU -eq $true -or $hwHasPartNPU -eq $true -or $hwHasPartFPGA -eq $true) {
-        $acceleratorPresent = $true
-        $hwAccel = $null
+    # ACCELERATORS
+    if ($acceleratorPresent -eq $true) {
+        #ACCELERATOR TYPE
+        if ($hwHasPartGPU -eq $true) {
+            $hwType = "GPU"
+        } elseif ($hwHasPartNPU -eq $true) {
+            $hwType = "NPU"
+        } elseif ($hwHasPartFPGA -eq $true) {
+            $hwType = "FPGA"
+        } else {
+            $hwType = $null
+        }
+
+        #ACCELERATOR OEM
+        $hwOem = $null; if ($testMode -eq $true) { $hwOem = "Nvidia" }
         $validInput = $true
         $showMessage = $false
         $retryCount = 0
-        $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\Accelerators\${hwArch}" -Directory
+        $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\accelerators\${hwType}" -Directory
         while ($true) {
             Clear-Host
-            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU OEM" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-            Write-Host "What is the OEM (manufacturer) of the CPU?`n"
-            Write-Host "  ${hwArch} CPU OEMs:" -ForegroundColor DarkGray
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - ${hwType} OEM" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "Because you enabled an accelerator, you now will define the ${hwType}'s specs.`n"
+            Write-Host "NOTE: If you didn't intend to enable an accelerator, please restart the script.`n" -ForegroundColor DarkYellow
+            Write-Host "What is the OEM (manufacturer) of the ${hwType}?`n"
+            Write-Host "  ${hwType} OEMs:" -ForegroundColor DarkGray
             while ($true) {
                 $counter = 0
                 foreach ($dir in $hardwareTypes) {
                     # Output the file name and its assigned letter
                     $counter++
-                    Write-Host "    $counter. $($dir.Name)"
+                    if ($dir.Name -eq $hwOem) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } else { Write-Host "     $counter. $($dir.Name)" }
                 }
                 $maxValidReadEntries = $counter
                 $counter++
-                Write-Host "    $counter. Other"
+                Write-Host "     $counter. Other"
                 break
             }
             if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
@@ -886,7 +902,7 @@ if ($scriptOperation -eq "create") {
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
             ### Input Portion ###
             if ($retryCount -eq 0) {
-                $userResponse = Read-Host "Select the CPU OEM from the list above`n"
+                $userResponse = Read-Host "Select the ${hwType} OEM from the list above`n"
                 $showMessage = $true
             } else {
                 $userResponse = Read-Host "Press Enter to continue or enter a different number to select another OEM`n"
@@ -896,26 +912,26 @@ if ($scriptOperation -eq "create") {
             if ($userResponse -eq "" -and $retryCount -eq 0) {
                 $validInput = $false
                 $showMessage = $false
-                $errorMessage = "Please select a CPU OEM."
+                $errorMessage = "Please select a ${hwType} OEM."
             } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
                 break
             } elseif ($userResponse -eq "$counter") {
                 $validInput = $false
                 $showMessage = $false
-                $errorMessage = "Please contact the content dev team to add a new CPU OEM."
+                $hwOem = $null
+                $errorMessage = "Please contact the content dev team to add a new ${hwType} OEM."
             } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
                 $validInput = $true
                 $showMessage = $true
                 $hwOem = $hardwareTypes[$userResponse - 1].Name
-                $messageText = "CPU OEM set to $hwOem"
+                $messageText = "${hwType} OEM set to $hwOem"
                 $retryCount++
             } else {
                 if ($testMode -eq $true) {
                     $validInput = $true
                     $showMessage = $false
-                    Write-Host = "Test mode is enabled. Continuing..."
-                    $hwOem = Intel
-                    Start-Sleep 1
+                    Write-Host = "Test mode is enabled. Setting defaults..."
+                    Read-Host "`nPress Enter to continue`n"
                     break
                 } else { 
                     $validInput = $false
@@ -924,10 +940,211 @@ if ($scriptOperation -eq "create") {
                 }
             }
         }
+
+
+        #ACCELERATOR BRAND
+        $hwBrand = $null; if ($testMode -eq $true) { $hwBrand = "Xeon" }
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\accelerators\${hwType}\${hwOem}"
+        while ($true) {
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - ${hwType} Brand" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "What is the brand (first part of the name) of the ${hwType}?`n"
+            Write-Host "NOTE: Some products (like certain modern Nvidia GPUs) have no explicit brand, but they do list how they are connected to the server.`nFor example, Nvidia has PCIe and HGX GPUs.`n" -ForegroundColor DarkYellow
+            Write-Host "  ${hwOem} ${hwType} brands:" -ForegroundColor DarkGray
+            while ($true) {
+                $counter = 0
+                foreach ($file in $hardwareTypes) {
+                    # Output the file name and its assigned letter
+                    $counter++
+                    if ($file.Name -eq $hwBrand) { Write-Host "   [ $counter. $($file.Name) ]" -ForegroundColor Green } else { Write-Host "     $counter. $($file.Name)" }
+                }
+                $maxValidReadEntries = $counter
+                $counter++
+                Write-Host "     $counter. Other"
+                break
+            }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+            ### Input Portion ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "Select the ${hwType} brand from the list above`n"
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different number to select another brand`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please select a ${hwType} brand."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
+                break
+            } elseif ($userResponse -eq "$counter") {
+                $validInput = $false
+                $showMessage = $false
+                $hwBrand = $null
+                $errorMessage = "Please contact the content dev team to add a new ${hwType} brand."
+            } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
+                $validInput = $true
+                $showMessage = $true
+                $hwBrand = $hardwareTypes[$userResponse - 1].Name
+                $messageText = "${hwType} brand set to $hwBrand"
+                $retryCount++
+            } else {
+                if ($testMode -eq $true) {
+                    $validInput = $true
+                    $showMessage = $false
+                    Write-Host = "Test mode is enabled. Setting defaults..."
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $false
+                    $showMessage = $false
+                    $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
+                }
+            }
+        }
+
+
+
+        # ASK ABOUT THE ACCELERATOR MODEL
+        $hwModel = $null; if ($testMode -eq $true) { $hwModel = "P100" }
+        $hwModelCopy = "<model>"
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        while ($true) {
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - ${hwType} Model Info" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "What is the rest of the ${hwType}'s model name/number (rest of the name after ${hwBrand})`n"
+            Write-Host "NOTE: If the series uses Nvidia RTX ${hwType}s, the ${hwType} might be an 'H100 40GB PCIe' or an 'RTX 4000 Ada-generation'.`nYou would enter 'H100' and '4000 Ada-generation' respectively`nIf the model name contains the memory (i.e. A100 80GB) do not include it in the model name. That info is input later.`n" -ForegroundColor DarkYellow
+            Write-Host "  Full ${accType} name:" -ForegroundColor DarkGray
+            if ($hwModel -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModelCopy}" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} <model>" }
+
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+
+            ### Input Portion ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "${hwOem} ${hwBrand} "
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different model`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please enter a ${hwType} model."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
+                break
+            } elseif ($userResponse -match "${hwBrand}" -or $userResponse -match "${hwOem}") {
+                $validInput = $false
+                $errorMessage = "Do not enter the ${hwType} oem or brand. Just enter the specific ${hwType} model name."
+            } else {
+                if ($testMode -eq $true) {
+                    Write-Host "Script is in Test mode. Setting defaults..." -ForegroundColor Green 
+                    $validInput = $true
+                    $showMessage = $false
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $true
+                    $showMessage = $true
+                    $hwModel = $userResponse
+                    $messageText = "${hwType} model set to ${hwModel}"    
+                    $hwModelCopy = $hwModel
+                    $retryCount++
+                }
+            }
+        }
+
+
+
+        # ASK ABOUT THE ACCELERATOR MEMORY BUFFER
+        $hwMemBuffer = $null; if ($testMode -eq $true) { $hwMemBuffer = "80" }
+        $hwMemBufferCopy = "<memory>"
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        while ($true) {
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - ${hwType} Memory Buffer Info" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "What is the rest of the ${hwBrand} ${hwModel} ${hwType}'s memory buffer size (if applicable)`n"
+            Write-Host "NOTES:`n- Enter the amount of memory in GB, but do not include the 'G' or 'GB' ('80GB' would be '80').`n- If the ${hwType} has memory in the MB, represent it as a decimal (250MB = .25GB).`nIf the ${hwType} shares system memory, put in the maximum amount it can address.`n- If the device has no memory/frame buffer, enter '0'.`n- Only enter the max amount of memory on a single device, not per host.`n" -ForegroundColor DarkYellow
+            Write-Host "  ${hwType} Memory:" -ForegroundColor DarkGray
+            if ($hwMemBuffer -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModel} ${hwMemBuffer}GB" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} ${hwModel} <memory>" }
+
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+
+            ### Input Portion ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "Memory Buffer Size for ${hwOem} ${hwBrand} ${hwModel}`n"
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different memory amount`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please enter the ${hwType}'s memory buffer."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
+                break
+            } elseif ($userResponse -match "${hwBrand}" -or $userResponse -match "${hwOem}") {
+                $validInput = $false
+                $errorMessage = "Do not enter the ${hwType} oem or brand. Just enter the specific ${hwType} memory amount."
+            } elseif ($userResponse -match "[a-zA-Z]") {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please enter a number for the memory buffer size. Do not include letters or special characters."
+            } elseif ($userResponse -eq "0") {
+                $validInput = $true
+                $showMessage = $true
+                $hwMemBuffer = ""
+                $messageText = "${hwType} memory buffer set to none"    
+                $hwMemBufferCopy = $hwMemBuffer
+                $retryCount++
+            } else {
+                if ($testMode -eq $true) {
+                    Write-Host "Script is in Test mode. Setting defaults..." -ForegroundColor Green 
+                    $validInput = $true
+                    $showMessage = $false
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $true
+                    $showMessage = $true
+                    $hwMemBuffer = $userResponse
+                    $messageText = "${hwType} memory buffer set to ${hwMemBuffer} GB"    
+                    $hwMemBufferCopy = $hwMemBuffer
+                    $retryCount++
+                }
+            }
+        }
+
+        #FINAL INFO FOR WRITING
+        if ($hwMemBuffer -eq "") {
+            $acceleratorSKU = "${hwOem} ${hwBrand} ${hwModel} ${hwType}"
+        } else {
+            $acceleratorSKU = "${hwOem} ${hwBrand} ${hwModel} ${hwType} (${hwMemBuffer}GB)"
+        }
+        $accType = $hwType
+        $accOem = $hwOem
+        $accBrand = $hwBrand
+        $accModel = $hwModel
+        $accMemory = $hwMemBuffer
     }
-
-
-    #>
 
 
     # SIZE NAME INPUT
@@ -976,7 +1193,7 @@ if ($scriptOperation -eq "create") {
             DelayDots
         } elseif ($userResponse -eq "e") {
             $csvData = Import-Csv -Path "$examplesDirectory\example-sizes-name-list.csv"
-            Write-Host "`nHere's an example of the file content:`n"
+            Write-Host "`nHere's an example of the file content:`n" -ForegroundColor Magenta
             Write-Host "  Size-Name" -ForegroundColor DarkGray
             foreach ($row in $csvData) {
                 Write-Host "  " -NoNewline
@@ -1199,8 +1416,9 @@ if ($scriptOperation -eq "create") {
         Write-Host "  3. Network specs        " -NoNewLine; if ($global:fileStatus3 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus3" -ForegroundColor Green } else { Write-Host "$global:fileStatus3" -ForegroundColor Yellow }
         Write-Host "    $specsNetworkINPUTLocalPath" -ForegroundColor DarkGray
         if ($acceleratorPresent -eq $true) {
-            Write-Host "4. Accelerator specs  " -NoNewline; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
+            Write-Host "  4. Accelerator specs    " -NoNewline; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
             Write-Host "    $specsAcceleratorsINPUTLocalPath" -ForegroundColor DarkGray
+            Write-Host "`nNOTE on Accelerators: The 'Accelerator-Memory-GB section is based on the total memory buffer available to the VM, not the memory per hardware device.`nFor example, if you have 3x 4GB GPUs, you would have 12GB of memory buffer available to the VM." -ForegroundColor DarkYellow
         }
         Write-Host "`nNOTE: If there is no data for a specific value, leave the cell empty.`nFilling the cells with a '-' or '0' will render incorrectly" -ForegroundColor DarkYellow
     }
@@ -1345,7 +1563,7 @@ if ($scriptOperation -eq "create") {
                 DelayDots
             } else {
                 $csvData = Import-Csv -Path "$examplesDirectory\example-specs-cpu-memory.csv"
-                Write-Host "`nHere's an example of the file content (in this case, the CPU & Memory file):`n"
+                Write-Host "`nHere's an example of the file content (in this case, the CPU & Memory file):`n" -ForegroundColor Magenta
                 $longSizeNameLength = ($csvData | ForEach-Object { $_."Size-Name".Length } | Measure-Object -Maximum).Maximum
                 $spacesSizeName = " " * ($longSizeNameLength - 9)
                 $longCpuLength = ($csvData | ForEach-Object { $_."vCPUs".Length } | Measure-Object -Maximum).Maximum
@@ -1408,7 +1626,8 @@ if ($scriptOperation -eq "create") {
         Clear-Host
         Write-Host "SUMMARY INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "Now we'll enter the data for the ${seriesBaseName} series' summary.`n"
-        Write-Host "Fill out the " -NoNewLine; Write-Host "INPUT-summary_${seriesBaseName}-series.txt" -NoNewLine -ForegroundColor Yellow; Write-Host " file with the size series' summary.`nMake sure the summary is a single paragraph of plain text."
+        Write-Host "Fill out the " -NoNewLine; Write-Host "INPUT-summary_${seriesBaseName}-series.txt" -NoNewLine -ForegroundColor Yellow; Write-Host " file with the size series' summary.`n"
+        Write-Host "NOTE: Make sure the summary is a single paragraph of plain text."
 
         if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
         if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
@@ -1440,7 +1659,7 @@ if ($scriptOperation -eq "create") {
                 DelayDots
             } else {
                 $csvData = Import-Csv -Path "$examplesDirectory\example-specs-cpu-memory.csv"
-                Write-Host "`nHere's an example of a summary file:`n"
+                Write-Host "`nHere's an example of a summary file:`n" -ForegroundColor Magenta
                 $summaryExampleContent = Get-Content -Path $summaryExamplePath -Raw
                 Write-Host $summaryExampleContent
                 Read-Host "`nPress Enter to continue`n"
@@ -1525,7 +1744,7 @@ foreach ($row in $csvData) {
     Write-Host "    - " -NoNewline
     Write-Host $row."Size-Name"
 }
-Read-Host "If there's an issue in any of this content, restart the script.`nIf everything looks good, press Enter to continue.`n"
+Read-Host "`nIf there's an issue in any of this content, restart the script.`nIf everything looks good, press Enter to continue.`n"
 Clear-Host
 
 function CsvFirstandLastImport {
@@ -1585,6 +1804,7 @@ Write-Host "     - Max Bandwidth (Mbps): $dataRange"; $specAggNetBandwidth = $da
 #Accelerators
 if ($acceleratorPresent -ne $false) {
     Write-Host "  Accelerators:" -ForegroundColor DarkGray
+    Write-Host "    $acceleratorSKU"
     $global:csvPath = $specsAcceleratorsInputPath; $global:csvColumn = "Accelerator-Count"; CsvFirstandLastImport
     Write-Host "     - Accelerators (Qty.)    : $dataRange"; $specAggAccelCount = $dataRange
     $global:csvPath = $specsAcceleratorsInputPath; $global:csvColumn = "Accelerator-Memory-GB"; CsvFirstandLastImport
@@ -1712,6 +1932,12 @@ if ($doCreateArticle -eq $true) {
     $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-accelerators-specs_${seriesBaseNameLower}-series.csv"
     TableCSVconvertMD
     $articleContent = $articleContent -replace "TABLEACCELERATORS", $global:markdownTableContent
+    ### List: Special Features
+    $articleContent = $articleContent -replace "SPECIALFEATURES", $global:specialFeatureFormattedData
+    ### List: Features Limitations
+    $articleContent = $articleContent -replace "FEATURELIMITATIONS", $global:featureLimitationFormattedData
+
+
     ### General fixes and definitions
     #### CPU and MEMORY Info
     $articleContent = $articleContent -replace "Size-Name", "Size Name"
@@ -1755,6 +1981,11 @@ if ($doCreateSpecs -eq $true) {
     $specsContent = $specsContent -replace "VCORESQTY", "$specAggCPUCores"
     ### Table: Memory
     $specsContent = $specsContent -replace "MEMORYGB", "$specAggMemory"
+    if ($hwHasPartMEM -eq $true) {
+        $specsContent = $specsContent -replace "MEMORYDATA", "$specAggMemorySpeed"
+    } else {
+        $specsContent = $specsContent -replace "MEMORYDATA", ""
+    }
     ### Table: Data Disks
     $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggDiskCount"
     $specsContent = $specsContent -replace "DISKIOPS", "$specAggDiskIOPS"
@@ -1764,6 +1995,7 @@ if ($doCreateSpecs -eq $true) {
     ### Table: Accelerators
     if ($acceleratorPresent -eq $true) {
         $specsContent = $specsContent -replace "ACCELDATA", "ACCELSKU ACCELMEM ACCELVMDATA"
+        $specsContent = $specsContent -replace "ACCELSKU", "ACCELSKU ACCELMEM ACCELVMDATA"
         $specsContent = $specsContent -replace "ACCELVMDATA", "<br> ACCELVMMEMMIN - ACCELVMMEMMAX<sup>GiB</sup> per VM"
     } else {
         $specsContent = $specsContent -replace "ACCELDATA", ""
