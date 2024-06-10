@@ -51,7 +51,10 @@ function TestMode {
 # PRE-RUN OPS AND CLEANUP
 ## Delete all data in the temp directory
 Get-ChildItem -Path $tempDirectory -Recurse | Remove-Item -Force
-
+## Create an info file in the temp directory
+New-Item -Path $tempDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+## Create an info file in the INPUT directory
+New-Item -Path $inputDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
 
 
 # WELCOME MESSAGE
@@ -1467,18 +1470,19 @@ if ($scriptOperation -eq "create") {
         }
         $global:fileStatus3 = $global:currentFileStatus
 
-
-        $global:currentFileStatus = $global:fileStatus4
-        $currentTemplateContent = Get-Content -Path $global:specsAcceleratorsEditedTemplatePath -Raw
-        $currentINPUTContent = Get-Content -Path $global:specsAcceleratorsINPUTPath -Raw
-        if ($currentINPUTContent -ne $currentTemplateContent) {
-            $global:currentFileStatus = $global:fileStatusEdited
-        } elseif ($global:openedFile4 -eq $true) {
-            $global:currentFileStatus = $global:fileStatusOpenNoEdits
-        } else {
-            $global:currentFileStatus = $global:fileStatusNoOpens
+        if ($acceleratorPresent -eq $true) {
+            $global:currentFileStatus = $global:fileStatus4
+            $currentTemplateContent = Get-Content -Path $global:specsAcceleratorsEditedTemplatePath -Raw
+            $currentINPUTContent = Get-Content -Path $global:specsAcceleratorsINPUTPath -Raw
+            if ($currentINPUTContent -ne $currentTemplateContent) {
+                $global:currentFileStatus = $global:fileStatusEdited
+            } elseif ($global:openedFile4 -eq $true) {
+                $global:currentFileStatus = $global:fileStatusOpenNoEdits
+            } else {
+                $global:currentFileStatus = $global:fileStatusNoOpens
+            }
+            $global:fileStatus4 = $global:currentFileStatus
         }
-        $global:fileStatus4 = $global:currentFileStatus
     }
     
 
@@ -1804,7 +1808,7 @@ Write-Host "     - Max NICs (Qty.)     : $dataRange"; $specAggNetNicCount = $dat
 $global:csvPath = $specsNetworkInputPath; $global:csvColumn = "Bandwidth-Mbps"; CsvFirstandLastImport
 Write-Host "     - Max Bandwidth (Mbps): $dataRange"; $specAggNetBandwidth = $dataRange
 #Accelerators
-if ($acceleratorPresent -ne $false) {
+if ($acceleratorPresent -eq $true) {
     Write-Host "  Accelerators:" -ForegroundColor DarkGray
     Write-Host "    $acceleratorSKU"
     $global:csvPath = $specsAcceleratorsInputPath; $global:csvColumn = "Accelerator-Count"; CsvFirstandLastImport
@@ -1931,9 +1935,13 @@ if ($doCreateArticle -eq $true) {
     TableCSVconvertMD
     $articleContent = $articleContent -replace "TABLENETWORK", $global:markdownTableContent
     ### Table: Accelerators
-    $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-accelerators-specs_${seriesBaseNameLower}-series.csv"
-    TableCSVconvertMD
-    $articleContent = $articleContent -replace "TABLEACCELERATORS", $global:markdownTableContent
+    if ($acceleratorPresent -eq $true) {
+        $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-accelerators-specs_${seriesBaseNameLower}-series.csv"
+        TableCSVconvertMD
+        $articleContent = $articleContent -replace "TABLEACCELERATORS", $global:markdownTableContent
+    } else {
+        $articleContent = $articleContent -replace "TABLEACCELERATORS", ""
+    }
     ### List: Special Features
     $articleContent = $articleContent -replace "SPECIALFEATURES", $global:specialFeatureFormattedData
     ### List: Features Limitations
