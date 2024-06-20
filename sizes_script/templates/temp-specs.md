@@ -12,8 +12,9 @@ ms.custom: include file
 ---
 | Part | Quantity <br><sup>Count <sup>Units | Specs <br><sup>SKU ID, Performance <sup>Units</sup>, etc.  |
 |---|---|---|
-| Processor    | VCORESQTY <sup> vCores      | PROCESSORSKU                      |
-| Memory       | MEMORYGB <sup> GiB          | MEMORYDATA                        |
-| Data Disks   | DATADISKSQTY <sup>Disks     | DISKIOPS <sup>IOPS/Disk</sup>     |
-| Network      | NICSQTY <sup> NICs          | NETBANDWIDTH <sup> Mbps           |
-| Accelerators | ACCELMIN - ACCELMAX         | ACCELDATA                         |
+| Processor      | VCORESQTY vCPUs      | PROCESSORSKU                      |
+| Memory         | MEMORYGB GiB          | MEMORYDATA                        |
+| Local Storage  | TEMPDISKQTY Disks     | TEMPDISKSIZE <br>TEMPDISKIOPS <br>TEMPDISKSPEED
+| Remote Storage | DATADISKSQTY Disks    | DATADISKIOPS IOPS <br>DATADISKSPEED MBps     |
+| Network        | NICSQTY NICs          | NETBANDWIDTH Mbps           |
+| Accelerators   | ACCELQTY   | ACCELDATA                         |

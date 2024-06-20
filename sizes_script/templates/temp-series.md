@@ -1,12 +1,12 @@
 ---
 title: SERIESNAMEUC size series
 description: Information on and specifications of the SERIESNAMEUC-series sizes
-author: mattmcinnes
+author: GITHUBALIAS
 ms.service: virtual-machines
 ms.subservice: sizes
 ms.topic: conceptual
 ms.date: ${todayDate}
-ms.author: mattmcinnes
+ms.author: MSFTALIAS
 ms.reviewer: mattmcinnes
 ---
 
@@ -27,9 +27,20 @@ TABLECPUMEMORY
 - [Check vCPU quotas](https://learn.microsoft.com/azure/virtual-machines/quotas)
 - [Introduction to Azure compute units (ACUs)](https://learn.microsoft.com/azure/virtual-machines/acu)
 
-### [Storage](#tab/sizestorage)
+### [Local Storage](#tab/sizestoragelocal)
 
-Data disks and Temp storage info for each size
+Local (temp) storage info for each size
+
+TABLELOCALSTORAGE
+
+> [!NOTE]
+> No local storage present in this series. For similar sizes with local storage, see the [Dpdsv6-series](./dpdsv6-series.md).
+>
+> For frequently asked questions, see [Azure VM sizes with no local temp disk](../../azure-vms-no-temp-disk.yml).
+
+### [Remote Storage](#tab/sizestorageremote)
+
+Remote (uncached) storage info for each size
 
 TABLESTORAGE
 
@@ -39,10 +50,13 @@ TABLESTORAGE
 - [Share an Azure managed disk](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-shared)
 
 #### Table definitions
+- <sup>1</sup>These sizes support [bursting](../../disk-bursting.md) to temporarily increase disk performance. Burst speeds can be maintained for up to 30 minutes at a time.
+- <sup>2</sup>Special Storage refers to either [Ultra Disk](../../../virtual-machines/disks-enable-ultra-ssd.md) or [Premium SSD v2](../../../virtual-machines/disks-deploy-premium-v2.md) storage.
 - Storage capacity is shown in units of GiB or 1024^3 bytes. When you compare disks measured in GB (1000^3 bytes) to disks measured in GiB (1024^3) remember that capacity numbers given in GiB may appear smaller. For example, 1023 GiB = 1098.4 GB.
 - Disk throughput is measured in input/output operations per second (IOPS) and MBps where MBps = 10^6 bytes/sec.
 - Data disks can operate in cached or uncached modes. For cached data disk operation, the host cache mode is set to ReadOnly or ReadWrite. For uncached data disk operation, the host cache mode is set to None.
-- To learn how to get the best storage performance for your VMs, see [Virtual machine and disk performance](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-performance).
+- To learn how to get the best storage performance for your VMs, see [Virtual machine and disk performance](../../../virtual-machines/disks-performance.md).
+
 
 ### [Network](#tab/sizenetwork)
 

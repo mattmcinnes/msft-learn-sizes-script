@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Alpha 0.4"
+$scriptVersion = "Beta 1.0"
 
 ## Test mode
 $testMode = $false
@@ -1790,7 +1790,7 @@ Write-Host "  Storage:" -ForegroundColor DarkGray
 $global:csvPath = $specsStorageInputPath; $global:csvColumn = "Data-Disk-Count"; CsvFirstandLastImport
 Write-Host "     - Data Disk Count (Qty.)   : $dataRange"; $specAggDiskCount = $dataRange
 $global:csvPath = $specsStorageInputPath; $global:csvColumn = "Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Data Disk IOPS (IOPS)    : $dataRange"; $specAggDiskIOPS = $dataRange
+Write-Host "     - Data Disk IOPS (IOPS)    : $dataRange"; $specAggDataDiskIOPS = $dataRange
 $global:csvPath = $specsStorageInputPath; $global:csvColumn = "Disk-Speed-MBps"; CsvFirstandLastImport
 Write-Host "     - Data Disk Speed (MBps)   : $dataRange"; $specAggDiskSpeed = $dataRange
 $global:csvPath = $specsStorageInputPath; $global:csvColumn = "Disk-Burst-Speed-MBps"; CsvFirstandLastImport
@@ -1998,7 +1998,7 @@ if ($doCreateSpecs -eq $true) {
     }
     ### Table: Data Disks
     $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggDiskCount"
-    $specsContent = $specsContent -replace "DISKIOPS", "$specAggDiskIOPS"
+    $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggDataDiskIOPS"
     ### Table: Network
     $specsContent = $specsContent -replace "NICSQTY", "$specAggNetNicCount"
     $specsContent = $specsContent -replace "NETBANDWIDTH", "$specAggNetBandwidth"
@@ -2009,6 +2009,7 @@ if ($doCreateSpecs -eq $true) {
         $specsContent = $specsContent -replace "ACCELVMDATA", "<br> ACCELVMMEMMIN - ACCELVMMEMMAX<sup>GiB</sup> per VM"
     } else {
         $specsContent = $specsContent -replace "ACCELDATA", ""
+        $specsContent = $specsContent -replace "ACCELQTY", ""
     }
     ## Output new file to the OUTPUT directory
     $specsContent | Set-Content -Path $seriesSpecsOutputPath
