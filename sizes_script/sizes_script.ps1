@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.0"
+$scriptVersion = "Beta 1.2"
 
 ## Test mode
 $testMode = $false
@@ -86,7 +86,7 @@ while ($true) {
     if ($inputLetter -match '^[a-c]$') {
         break
     } else {
-        Write-Host "Invalid input. Please enter a letter from 'a' to 'c'`n"
+        Write-Host "Invalid input. Please enter a letter from 'a' to 'c'`n" -ForegroundColor Red
     }
 }
 if ($inputLetter -eq "a") {
@@ -104,7 +104,8 @@ Clear-Host
 
 
 # IS LOCAL GIT DIRECTORY DEFAULT?
-Write-Host "GIT REPO STATUS`n" -BackgroundColor Blue
+$gitDirInput = "C:\Users\$env:USERNAME\GitHub\$repoName"
+Write-Host "LOCAL REPO CLONE LOCATION" -BackgroundColor Blue -NoNewline; Write-Host "" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
 Write-Host "Here you'll define the location of your local Git directory for the $repoName repository.`n"
 Write-Host "NOTE: If you're just exploring the script and don't want to run any Git operations, type 'd' for demo mode.`n" -ForegroundColor DarkYellow
 $userResponse = Read-Host "Is your '$repoName' local directory located at the default location ($defaultGitDir)?`n(y/n)"
@@ -138,19 +139,53 @@ while ($true) {
         $gitDir = $originalDirectory
         break
     } elseif ($userResponse -eq "n"){
-        # If no, ask the user to enter the path to their Git directory, then check if it exists in case of typos
+        # If no, ask the user if its in one of the options, or ask the user to enter the path to their Git directory, then check if it exists in case of typos
+        Clear-Host
+        $showMessage = $false
         while ($true) {
-            $gitDir = Read-Host "Please enter the full path to your Git directory:`n"
-            if (Test-Path -Path $gitDir) {
-                Write-Host "Directory found!" -ForegroundColor Green
-                break
+            Write-Host "LOCAL REPO CLONE LOCATION" -BackgroundColor Blue -NoNewline; Write-Host " - Alternate Location" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "`nCommon options:`n"
+            $commonDirsList = "C:\GitHub\$repoName", "C:\Users\$env:USERNAME\Documents\GitHub\$repoName", "C:\Users\$env:USERNAME\GitHub\$repoName", "D:\GitHub\$repoName"
+            $commonDirCount = $commonDirsList.Count
+            for ($i = 0; $i -lt $commonDirCount; $i++) {
+                Write-Host "    $($i + 1). $($commonDirsList[$i])" -ForegroundColor Yellow
+            }
+            if ($showMessage -eq $true) {
+                Write-Host $messageText -ForegroundColor Red
             } else {
-                Write-Host "ERROR: The directory does not exist." -ForegroundColor Red
+                Write-Host "`n" -ForegroundColor DarkGray
+            }
+            $gitDirInput = Read-Host "`nSelect from the list of common options (enter '1' through '$commonDirCount') or enter the full path to your Git directory:`n"
+            if ($gitDirInput -ge 1 -and $gitDirInput -le $commonDirCount) {
+                $gitDir = $commonDirsList[$gitDirInput - 1]
+                if (Test-Path -Path $gitDir) {
+                    Write-Host "`nDirectory found!" -ForegroundColor Green
+                    break
+                } else {
+                    $messageText = "`nERROR: The directory does not exist. Try another default or enter the full path to your Git directory."
+                    $showMessage = $true
+                    Clear-Host
+                }
+            } elseif ($girDirInput.Length -gt 2) {
+                $gitDir = $gitDirInput
+                if (Test-Path -Path $gitDir) {
+                    Write-Host "Directory found!" -ForegroundColor Green
+                    break
+                } else {
+                    $messageText = "`nERROR: The directory does not exist. Double-check the path and try again."
+                    $showMessage = $true
+                    Clear-Host
+                }
+            } else {
+                $messageText = "`nERROR: Invalid input. Please enter a number from '1' to '$commonDirCount' or enter the full path to your Git directory."
+                $showMessage = $true
+                Clear-Host
             }
         }
         break
     } else {
-        $userResponse = Read-Host "Invalid input. Please enter 'y' or 'n'`n"
+        Write-Host "Invalid input. Please enter 'y' or 'n'" -ForegroundColor Red
+        $userResponse = Read-Host
     }
 }
 Write-Host "`nThe directory is set to: $gitDir" -ForegroundColor Magenta
@@ -158,28 +193,37 @@ Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
 
+
+
 # DEFINE SIZE SERIES TYPE
-Write-Host "SIZE TYPE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-Write-Host "What type (category) is your size series?`n"
-Write-Host "    a. General-purpose" -ForegroundColor Yellow
-Write-Host "    b. Compute-optimized" -ForegroundColor Yellow
-Write-Host "    c. Memory-optimized" -ForegroundColor Yellow
-Write-Host "    d. Storage-optimized" -ForegroundColor Yellow
-Write-Host "    e. GPU-accelerated" -ForegroundColor Yellow
-Write-Host "    f. FPGA-accelerated" -ForegroundColor Yellow
-Write-Host "    g. High-performance-compute" -ForegroundColor Yellow
-Write-Host "    h. Other" -ForegroundColor Yellow
+$showMessage = $false
 while ($true) {
+    Write-Host "SIZE TYPE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "What type (category) is your size series?`n"
+    Write-Host "    a. General-purpose" -ForegroundColor Yellow
+    Write-Host "    b. Compute-optimized" -ForegroundColor Yellow
+    Write-Host "    c. Memory-optimized" -ForegroundColor Yellow
+    Write-Host "    d. Storage-optimized" -ForegroundColor Yellow
+    Write-Host "    e. GPU-accelerated" -ForegroundColor Yellow
+    Write-Host "    f. FPGA-accelerated" -ForegroundColor Yellow
+    Write-Host "    g. High-performance-compute" -ForegroundColor Yellow
+    Write-Host "    h. Other" -ForegroundColor Yellow
+    if ($showMessage -eq $true) {
+        Write-Host "`nERROR: Invalid input. Please enter a letter from 'a' to 'h'`n" -ForegroundColor Red
+    } else {
+        Write-Host "`n `n" -ForegroundColor DarkGray
+    }
     if ($testMode -eq $true) {
         TestMode
         break
     } else {
-        $inputLetter = Read-Host "`nEnter the letter of the correct category (e.g., 'a' for 'General-purpose' type)`n"
+        $inputLetter = Read-Host "Enter the letter of the correct category (e.g., 'a' for 'General-purpose' type)`n"
     }
     if ($inputLetter -match '^[a-h]$') {
         break
     } else {
-        Write-Host "`nERROR: Invalid input. Please enter a letter from 'a' to 'h'.`n" -ForegroundColor Red
+        $showMessage = $true
+        Clear-Host
     }
 }
 
@@ -227,39 +271,54 @@ Write-Host "`nYou're $scriptOpIng a $seriesTypeFancy type series." -ForegroundCo
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
+
+
+
+
+
 # DEFINE SERIES FAMILY
-Write-Host "SIZE FAMILY" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-Write-Host "What family or sub-family does this series belong to?`n"
-
-$files = Get-ChildItem -Path $sizesTypeDirectory -Filter '*-family.md*'
-
-# Iterate over each file and assign a letter
-$counter = 0
-foreach ($file in $files) {
-    # Output the file name and its assigned letter
-    $counter++
-    $familyFileTrunk = $file.Name -replace "-family\.md", " family"
-    $familyFileTrunk = $familyFileTrunk.Substring(0, 2).ToUpper() + $familyFileTrunk.Substring(2)
-    Write-Host "    $counter. ${familyFileTrunk}" -ForegroundColor Yellow
-}
-$maxValidReadEntries = $counter
-$counter++
-Write-Host "    $counter. Other (not listed)" -ForegroundColor Yellow
-
+$showMessage = $false
 while ($true) {
+    Write-Host "SIZE FAMILY" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "What family or sub-family does this series belong to?`n"
+
+    $files = Get-ChildItem -Path $sizesTypeDirectory -Filter '*-family.md*'
+
+    # Iterate over each file and assign a letter
+    $counter = 0
+    foreach ($file in $files) {
+        # Output the file name and its assigned letter
+        $counter++
+        $familyFileTrunk = $file.Name -replace "-family\.md", " family"
+        $familyFileTrunk = $familyFileTrunk.Substring(0, 2).ToUpper() + $familyFileTrunk.Substring(2)
+        Write-Host "    $counter. ${familyFileTrunk}" -ForegroundColor Yellow
+    }
+    $maxValidReadEntries = $counter
+    $counter++
+    Write-Host "    $counter. Other (not listed)" -ForegroundColor Yellow
+
+    if ($showMessage -eq $true) {
+        Write-Host $messageText -ForegroundColor Red
+    } else {
+        Write-Host "`n `n" -ForegroundColor DarkGray
+    }
+
     if ($testMode -eq $true) {
         TestMode
         $inputNumber = "1"
     } else {
-        $inputNumber = Read-Host "`nEnter the number of the correct family or subfamily (e.g., '1' for 'A family')`n"
+        $inputNumber = Read-Host "Enter the number of the correct family or subfamily (e.g., '1' for 'A family')`n"
     }
     if ($inputNumber -match "^[1-$maxValidReadEntries]$") {
         break
     } elseif ($inputNumber -eq $counter) {
-        Write-Host "`nUNSUPPORTED OPERATION: Please contact a content developer to add a family.`n" -ForegroundColor Red
-        return
+        $messageText = "`nUNSUPPORTED OPERATION: Please contact a content developer to add a family.`n"
+        $showMessage = $true
+        Clear-Host
     } else {
-        Write-Host "`nERROR: Invalid input. Please enter a number from 1 to $counter or 'done'.`n" -ForegroundColor Red
+        $messageText = "`nERROR: Invalid input. Please enter a number from 1 to $counter or 'done'.`n"
+        $showMessage = $true
+        Clear-Host
     }
 }
 
@@ -460,15 +519,17 @@ if ($scriptOperation -eq "create") {
         Clear-Host
         Write-Host "CUSTOM HARDWARE PRESENCE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "What hardware types are present on the series' host?`n"
-        Write-Host "NOTE: These entries are for CUSTOM data (i.e. aspects of hardware that differ from a standard Azure host).`n" -ForegroundColor DarkYellow
+        Write-Host "NOTE: It's unlikely (and often impossible) for a size to contain all of the options listed below.`n" -ForegroundColor DarkYellow
+        Write-Host "WARNING: Double check the presence of Local (Temp) storage on your size! You can't add or remove this later.`n" -ForegroundColor Red
         Write-Host "A 'standard host' has:`n  - A detailed CPU (entered later)`n  - Unspecified memory specs (aside from capacity)`n  - A Mellanox (now Nvidia) ConnectX NIC.`n"
         Write-Host "Disabling a hardware type will populate it with: `n  - Default values for required components`n  - No values for those that don't normally exist.`n"
         Write-Host "  Hardware component status:" -ForegroundColor DarkGray
-        Write-Host "    1. Custom Memory (RAM)                  " -NoNewLine; if ($hwHasPartMEM -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Yellow }
-        Write-Host "    2. Custom Network Interface Card (NIC)  " -NoNewLine; if ($hwHasPartNIC -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Yellow }
-        Write-Host "    3. Graphics Processing Unit (GPU)       " -NoNewLine; if ($hwHasPartGPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
-        Write-Host "    4. Neural/AI Processing Unit (NPU)      " -NoNewLine; if ($hwHasPartNPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
-        Write-Host "    5. Field-Programmable Gate Array (FPGA) " -NoNewLine; if ($hwHasPartFPGA -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
+        Write-Host "    1. Local Storage (Temp Disks)           " -NoNewLine; if ($hwHasPartTMPDSK -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
+        Write-Host "    2. Custom Memory (RAM)                  " -NoNewLine; if ($hwHasPartMEM -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Yellow }
+        Write-Host "    3. Custom Network Interface Card (NIC)  " -NoNewLine; if ($hwHasPartNIC -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Yellow }
+        Write-Host "    4. Graphics Processing Unit (GPU)       " -NoNewLine; if ($hwHasPartGPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
+        Write-Host "    5. Neural/AI Processing Unit (NPU)      " -NoNewLine; if ($hwHasPartNPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
+        Write-Host "    6. Field-Programmable Gate Array (FPGA) " -NoNewLine; if ($hwHasPartFPGA -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
         
         if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
         if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
@@ -478,12 +539,16 @@ if ($scriptOperation -eq "create") {
         if ($userResponse -eq "1") {
             $validInput = $true
             $showMessage = $true
-            if ($hwHasPartMEM -eq $true) { $hwHasPartMEM = $false ; $messageText = "Custom Memory no longer present"} else { $hwHasPartMEM = $true ; $messageText = "Custom Memory now present" }
+            if ($hwHasPartTMPDSK -eq $true) { $hwHasPartTMPDSK = $false ; $localStoragePresent = $false ; $messageText = "Local Storage no longer present"} else { $hwHasPartTMPDSK = $true ; $localStoragePresent = $true ; $messageText = "Local Storage now present" }
         } elseif ($userResponse -eq "2") {
             $validInput = $true
             $showMessage = $true
-            if ($hwHasPartNIC -eq $true) { $hwHasPartNIC = $false ; $messageText = "Custom NIC no longer present" } else { $hwHasPartNIC = $true ; $messageText = "Custom NIC now present" }
+            if ($hwHasPartMEM -eq $true) { $hwHasPartMEM = $false ; $messageText = "Custom Memory no longer present"} else { $hwHasPartMEM = $true ; $messageText = "Custom Memory now present" }
         } elseif ($userResponse -eq "3") {
+            $validInput = $true
+            $showMessage = $true
+            if ($hwHasPartNIC -eq $true) { $hwHasPartNIC = $false ; $messageText = "Custom NIC no longer present" } else { $hwHasPartNIC = $true ; $messageText = "Custom NIC now present" }
+        } elseif ($userResponse -eq "4") {
             $validInput = $true
             $showMessage = $true
             if ($hwHasPartGPU -eq $true) { $hwHasPartGPU = $false ; $messageText = "GPU no longer present"} else { $hwHasPartGPU = $true ; $messageText = "GPU now present" }
@@ -494,7 +559,7 @@ if ($scriptOperation -eq "create") {
                 $validInput = $false
                 $showMessage = $false
             }
-        } elseif ($userResponse -eq "4") {
+        } elseif ($userResponse -eq "5") {
             $validInput = $true
             $showMessage = $true
             if ($hwHasPartNPU -eq $true) { $hwHasPartNPU = $false ; $messageText = "NPU no longer present"} else { $hwHasPartNPU = $true ; $messageText = "NPU now present"}
@@ -505,7 +570,7 @@ if ($scriptOperation -eq "create") {
                 $validInput = $false
                 $showMessage = $false
             }
-        } elseif ($userResponse -eq "5") {
+        } elseif ($userResponse -eq "6") {
             $validInput = $true
             $showMessage = $true
             if ($hwHasPartFPGA -eq $true) { $hwHasPartFPGA = $false ; $messageText = "FPGA no longer present"} else { $hwHasPartFPGA = $true ; $messageText = "FPGA now present"}
@@ -530,7 +595,7 @@ if ($scriptOperation -eq "create") {
             } else { 
                 $validInput = $false
                 $showMessage = $false
-                $errorMessage = "Invalid input. Please enter a number from 1 to 5."
+                $errorMessage = "Invalid input. Please enter a number from 1 to 6."
             }
         }
     }
@@ -1286,16 +1351,23 @@ if ($scriptOperation -eq "create") {
             $mergedCsvINPUTPath = "$inputDirectory\INPUT-cpu-memory-specs_${seriesNameLower}.csv"
             $mergedCsvTEMPPath = "$tempDirectory\edited-specs-cpu-memory.csv"
         } elseif ($count -eq 1) {
-            # Storage
-            $templateCsvPath = "$templateDirectory\temp-specs-storage.csv"
-            $mergedCsvINPUTPath = "$inputDirectory\INPUT-storage-specs_${seriesNameLower}.csv"
-            $mergedCsvTEMPPath = "$tempDirectory\edited-specs-storage.csv"
+            # Storage Local
+            if ($localStoragePresent -eq $true) {
+                $templateCsvPath = "$templateDirectory\temp-specs-storage-local.csv"
+                $mergedCsvINPUTPath = "$inputDirectory\INPUT-storage-local-specs_${seriesNameLower}.csv"
+                $mergedCsvTEMPPath = "$tempDirectory\edited-specs-storage-local.csv"
+            }
         } elseif ($count -eq 2) {
+            # Storage Remote
+            $templateCsvPath = "$templateDirectory\temp-specs-storage-remote.csv"
+            $mergedCsvINPUTPath = "$inputDirectory\INPUT-storage-remote-specs_${seriesNameLower}.csv"
+            $mergedCsvTEMPPath = "$tempDirectory\edited-specs-storage-remote.csv"
+        } elseif ($count -eq 3) {
             # Network
             $templateCsvPath = "$templateDirectory\temp-specs-network.csv"
             $mergedCsvINPUTPath = "$inputDirectory\INPUT-network-specs_${seriesNameLower}.csv"
             $mergedCsvTEMPPath = "$tempDirectory\edited-specs-network.csv"
-        } elseif ($count -eq 3) {
+        } elseif ($count -eq 4) {
             # Accelerators
             if ($acceleratorPresent -eq $true) {
                 $templateCsvPath = "$templateDirectory\temp-specs-accelerators.csv"
@@ -1354,11 +1426,18 @@ if ($scriptOperation -eq "create") {
     $global:specsCpuMemoryEditedTemplatePath = "$tempDirectory\edited-specs-cpu-memory.csv"
 
 
-    ## Specs Storage CSV file
-    $global:specsStorageINPUTPath = "$inputDirectory\INPUT-storage-specs_${seriesNameLower}.csv"
-    $global:specsStorageINPUTLocalPath = ".\INPUT\INPUT-storage-specs_${seriesNameLower}.csv"
-    $global:specsStorageOriginalTemplatePath = "$templateDirectory\temp-specs-storage.csv"
-    $global:specsStorageEditedTemplatePath = "$tempDirectory\edited-specs-storage.csv"
+    ## Specs Storage Local CSV file
+    $global:specsStorageLocalINPUTPath = "$inputDirectory\INPUT-storage-local-specs_${seriesNameLower}.csv"
+    $global:specsStorageLocalINPUTLocalPath = ".\INPUT\INPUT-storage-local-specs_${seriesNameLower}.csv"
+    $global:specsStorageLocalOriginalTemplatePath = "$templateDirectory\temp-specs-storage-local.csv"
+    $global:specsStorageLocalEditedTemplatePath = "$tempDirectory\edited-specs-storage-local.csv"
+
+
+    ## Specs Storage Remote CSV file
+    $global:specsStorageRemoteINPUTPath = "$inputDirectory\INPUT-storage-remote-specs_${seriesNameLower}.csv"
+    $global:specsStorageRemoteINPUTLocalPath = ".\INPUT\INPUT-storage-remote-specs_${seriesNameLower}.csv"
+    $global:specsStorageRemoteOriginalTemplatePath = "$templateDirectory\temp-specs-storage-remote.csv"
+    $global:specsStorageRemoteEditedTemplatePath = "$tempDirectory\edited-specs-storage-remote.csv"
 
 
     ## Specs Network CSV file
@@ -1401,6 +1480,9 @@ if ($scriptOperation -eq "create") {
     $global:fileStatus4 = "(not edited)"
     $global:openedFile4 = $false
 
+    $global:fileStatus5 = "(not edited)"
+    $global:openedFile5 = $false
+
     $global:fileStatusF = "(not opened)"
     $global:currentTemplate = "NULL"
     $global:currentTemplateContent = "NULL"
@@ -1412,18 +1494,28 @@ if ($scriptOperation -eq "create") {
         Write-Host "SPECIFICATIONS INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "Now we'll enter the data for the ${seriesBaseName} series' specs.`n"
         Write-Host "Fill out the following INPUT .csv files (comma-deliniated) with relevant data using Excel or a text editor:`n"
-        Write-Host "  1. CPU and Memory specs " -NoNewLine; if ($global:fileStatus1 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus1" -ForegroundColor Green } else { Write-Host "$global:fileStatus1" -ForegroundColor Yellow }
-        Write-Host "    $specsCpuMemoryINPUTLocalPath" -ForegroundColor DarkGray
-        Write-Host "  2. Storage specs        " -NoNewLine; if ($global:fileStatus2 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus2" -ForegroundColor Green } else { Write-Host "$global:fileStatus2" -ForegroundColor Yellow }
-        Write-Host "    $specsStorageINPUTLocalPath" -ForegroundColor DarkGray
-        Write-Host "  3. Network specs        " -NoNewLine; if ($global:fileStatus3 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus3" -ForegroundColor Green } else { Write-Host "$global:fileStatus3" -ForegroundColor Yellow }
-        Write-Host "    $specsNetworkINPUTLocalPath" -ForegroundColor DarkGray
+        Write-Host "  1. CPU and Memory specs   " -NoNewLine; if ($global:fileStatus1 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus1" -ForegroundColor Green } else { Write-Host "$global:fileStatus1" -ForegroundColor Yellow }
+        Write-Host "    $specsCpuMemoryINPUTLocalPath `n" -ForegroundColor DarkGray
+        if ($localStoragePresent -eq $true) {
+            Write-Host "  2. Local Storage specs    " -NoNewLine; if ($global:fileStatus2 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus2" -ForegroundColor Green } else { Write-Host "$global:fileStatus2" -ForegroundColor Yellow }
+            Write-Host "    $specsStorageLocalINPUTLocalPath `n" -ForegroundColor DarkGray
+        } else {
+            Write-Host "  2. Local Storage specs    " -NoNewLine; Write-Host "(ignored)" -ForegroundColor DarkGreen;
+            Write-Host "    No INPUT file present as feature is disabled. `n " -ForegroundColor DarkGray
+            $global:fileStatus2 = $global:fileStatusEdited
+        }
+        Write-Host "  3. Remote Storage specs   " -NoNewLine; if ($global:fileStatus3 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus3" -ForegroundColor Green } else { Write-Host "$global:fileStatus3" -ForegroundColor Yellow }
+        Write-Host "    $specsStorageRemoteINPUTLocalPath `n" -ForegroundColor DarkGray
+        Write-Host "  4. Network specs          " -NoNewLine; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
+        Write-Host "    $specsNetworkINPUTLocalPath `n" -ForegroundColor DarkGray
         if ($acceleratorPresent -eq $true) {
-            Write-Host "  4. Accelerator specs    " -NoNewline; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
-            Write-Host "    $specsAcceleratorsINPUTLocalPath" -ForegroundColor DarkGray
+            Write-Host "  5. Accelerator specs      " -NoNewline; if ($global:fileStatus5 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus5" -ForegroundColor Green } else { Write-Host "$global:fileStatus5" -ForegroundColor Yellow }
+            Write-Host "    $specsAcceleratorsINPUTLocalPath `n" -ForegroundColor DarkGray
             Write-Host "`nNOTE (Accelerators): The 'Accelerator-Memory-GB section is based on the total memory buffer available to the VM, not the memory per hardware device.`nFor example, if you have 3x 4GB GPUs, you would have 12GB of memory buffer available to the VM." -ForegroundColor DarkYellow
         } else {
-            $global:fileStatus4 = $global:fileStatusEdited
+            Write-Host "  5. Accelerator specs      " -NoNewline; Write-Host "(ignored)" -ForegroundColor DarkGreen
+            Write-Host "    No INPUT file present as feature is disabled. `n " -ForegroundColor DarkGray
+            $global:fileStatus5 = $global:fileStatusEdited
         }
         Write-Host "`nNOTE: If there is no data for a specific value, leave the cell empty.`nFilling the cells with a '-' or '0' will render incorrectly" -ForegroundColor DarkYellow
     }
@@ -1444,23 +1536,23 @@ if ($scriptOperation -eq "create") {
         }
         $global:fileStatus1 = $global:currentFileStatus
 
-
-        $global:currentFileStatus = $global:fileStatus2
-        $currentTemplateContent = Get-Content -Path $global:specsStorageEditedTemplatePath -Raw
-        $currentINPUTContent = Get-Content -Path $global:specsStorageINPUTPath -Raw
-        if ($currentINPUTContent -ne $currentTemplateContent) {
-            $global:currentFileStatus = $global:fileStatusEdited
-        } elseif ($global:openedFile2 -eq $true) {
-            $global:currentFileStatus = $global:fileStatusOpenNoEdits
-        } else {
-            $global:currentFileStatus = $global:fileStatusNoOpens
+        if ($localStoragePresent -eq $true) {
+            $global:currentFileStatus = $global:fileStatus2
+            $currentTemplateContent = Get-Content -Path $global:specsStorageLocalEditedTemplatePath -Raw
+            $currentINPUTContent = Get-Content -Path $global:specsStorageLocalINPUTPath -Raw
+            if ($currentINPUTContent -ne $currentTemplateContent) {
+                $global:currentFileStatus = $global:fileStatusEdited
+            } elseif ($global:openedFile2 -eq $true) {
+                $global:currentFileStatus = $global:fileStatusOpenNoEdits
+            } else {
+                $global:currentFileStatus = $global:fileStatusNoOpens
+            }
+            $global:fileStatus2 = $global:currentFileStatus
         }
-        $global:fileStatus2 = $global:currentFileStatus
-
 
         $global:currentFileStatus = $global:fileStatus3
-        $currentTemplateContent = Get-Content -Path $global:specsNetworkEditedTemplatePath -Raw
-        $currentINPUTContent = Get-Content -Path $global:specsNetworkINPUTPath -Raw
+        $currentTemplateContent = Get-Content -Path $global:specsStorageRemoteEditedTemplatePath -Raw
+        $currentINPUTContent = Get-Content -Path $global:specsStorageRemoteINPUTPath -Raw
         if ($currentINPUTContent -ne $currentTemplateContent) {
             $global:currentFileStatus = $global:fileStatusEdited
         } elseif ($global:openedFile3 -eq $true) {
@@ -1470,18 +1562,31 @@ if ($scriptOperation -eq "create") {
         }
         $global:fileStatus3 = $global:currentFileStatus
 
+
+        $global:currentFileStatus = $global:fileStatus4
+        $currentTemplateContent = Get-Content -Path $global:specsNetworkEditedTemplatePath -Raw
+        $currentINPUTContent = Get-Content -Path $global:specsNetworkINPUTPath -Raw
+        if ($currentINPUTContent -ne $currentTemplateContent) {
+            $global:currentFileStatus = $global:fileStatusEdited
+        } elseif ($global:openedFile4 -eq $true) {
+            $global:currentFileStatus = $global:fileStatusOpenNoEdits
+        } else {
+            $global:currentFileStatus = $global:fileStatusNoOpens
+        }
+        $global:fileStatus4 = $global:currentFileStatus
+
         if ($acceleratorPresent -eq $true) {
-            $global:currentFileStatus = $global:fileStatus4
+            $global:currentFileStatus = $global:fileStatus5
             $currentTemplateContent = Get-Content -Path $global:specsAcceleratorsEditedTemplatePath -Raw
             $currentINPUTContent = Get-Content -Path $global:specsAcceleratorsINPUTPath -Raw
             if ($currentINPUTContent -ne $currentTemplateContent) {
                 $global:currentFileStatus = $global:fileStatusEdited
-            } elseif ($global:openedFile4 -eq $true) {
+            } elseif ($global:openedFile5 -eq $true) {
                 $global:currentFileStatus = $global:fileStatusOpenNoEdits
             } else {
                 $global:currentFileStatus = $global:fileStatusNoOpens
             }
-            $global:fileStatus4 = $global:currentFileStatus
+            $global:fileStatus5 = $global:currentFileStatus
         }
     }
     
@@ -1496,7 +1601,7 @@ if ($scriptOperation -eq "create") {
         if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
-        Write-Host "Enter numbers '1 - 4' to open the corresponding file in Excel `nEnter 'f' to open the INPUT directory in Explorer `nEnter 'e' to view an example `nType 'r' to refresh the edit status `nType 'done' when you've finished entering data in all files to continue`n:" -NoNewline
+        Write-Host "Enter numbers '1 - 5' to open the corresponding file in Excel `nEnter 'f' to open the INPUT directory in Explorer `nEnter 'e' to view an example `nEnter 'r' to refresh the edit status `nEnter 'done' when you've finished entering data in all files to continue`n:" -NoNewline
         if ($testMode -eq $true) {
             Read-Host "`nTest Mode Enabled, press Enter to continue`n"
             $userResponse = "done"
@@ -1515,20 +1620,27 @@ if ($scriptOperation -eq "create") {
             Clear-Host
             RenderDataInputStatus
         } elseif ($userResponse -eq "2") {
-            Start-Process "excel.exe" -ArgumentList "`"$specsStorageINPUTPath`""
-            $global:currentTemplate = $specsStorageEditedTemplatePath
-            $global:currentINPUT = $specsStorageINPUTPath
-            Write-Host "`nOpening excel.exe" -NoNewline
-            $global:openedFile2 = $true
-            DelayDots
-            Read-Host "`nPress Enter to continue...`n"
-            CompareAllContent
-            Clear-Host
-            RenderDataInputStatus
+            if ($localStoragePresent -eq $true) {
+                Start-Process "excel.exe" -ArgumentList "`"$specsStorageLocalINPUTPath`""
+                $global:currentTemplate = $specsStorageLocalEditedTemplatePath
+                $global:currentINPUT = $specsStorageLocalINPUTPath
+                Write-Host "`nOpening excel.exe" -NoNewline
+                $global:openedFile2 = $true
+                DelayDots
+                Read-Host "`nPress Enter to continue...`n"
+                CompareAllContent
+                Clear-Host
+                RenderDataInputStatus
+            } else {
+                $validInput = $false
+                $errorMessage = "Local Storage is not present in this series. Please select another option."
+                Clear-Host
+                RenderDataInputStatus
+            }
         } elseif ($userResponse -eq "3") {
-            Start-Process "excel.exe" -ArgumentList "`"$specsNetworkINPUTPath`""
-            $global:currentTemplate = $specsNetworkEditedTemplatePath
-            $global:currentINPUT = $specsNetworkINPUTPath
+            Start-Process "excel.exe" -ArgumentList "`"$specsStorageRemoteINPUTPath`""
+            $global:currentTemplate = $specsStorageRemoteEditedTemplatePath
+            $global:currentINPUT = $specsStorageRemoteINPUTPath
             Write-Host "`nOpening excel.exe" -NoNewline
             $global:openedFile3 = $true
             DelayDots
@@ -1537,9 +1649,9 @@ if ($scriptOperation -eq "create") {
             Clear-Host
             RenderDataInputStatus
         } elseif ($userResponse -eq "4") {
-            Start-Process "excel.exe" -ArgumentList "`"$specsAcceleratorsINPUTPath`""
-            $global:currentTemplate = $specsAcceleratorsEditedTemplatePath
-            $global:currentINPUT = $specsAcceleratorsINPUTPath
+            Start-Process "excel.exe" -ArgumentList "`"$specsNetworkINPUTPath`""
+            $global:currentTemplate = $specsNetworkEditedTemplatePath
+            $global:currentINPUT = $specsNetworkINPUTPath
             Write-Host "`nOpening excel.exe" -NoNewline
             $global:openedFile4 = $true
             DelayDots
@@ -1547,8 +1659,27 @@ if ($scriptOperation -eq "create") {
             CompareAllContent
             Clear-Host
             RenderDataInputStatus
+        } elseif ($userResponse -eq "5") {
+            if ($acceleratorPresent -eq $true) {
+                Start-Process "excel.exe" -ArgumentList "`"$specsAcceleratorsINPUTPath`""
+                $global:currentTemplate = $specsAcceleratorsEditedTemplatePath
+                $global:currentINPUT = $specsAcceleratorsINPUTPath
+                Write-Host "`nOpening excel.exe" -NoNewline
+                $global:openedFile5 = $true
+                DelayDots
+                Read-Host "`nPress Enter to continue...`n"
+                CompareAllContent
+                Clear-Host
+                RenderDataInputStatus
+            } else {
+            $validInput = $false
+            $errorMessage = "Accelerators are not present in this series. Please select another option."
+            Clear-Host
+            RenderDataInputStatus
+            }
         } elseif ($userResponse -eq "f") {
             Start-Process "explorer.exe" -ArgumentList "$inputDirectory"
+            $validInput = $true
             Write-Host "`nOpening explorer.exe" -NoNewline
             DelayDots
             Read-Host "`nPress Enter to continue...`n"
@@ -1557,11 +1688,14 @@ if ($scriptOperation -eq "create") {
             RenderDataInputStatus
         } elseif ($userResponse -eq "r") {
             Write-Host "`nRefreshing status" -NoNewline
+            DelayDots
+            $validInput = $true
             CompareAllContent
             Clear-Host
             RenderDataInputStatus
         } elseif ($userResponse -eq "e") {
             Write-Host "`nWould you like to view the example in this window or in Excel?`nType 'x' for Excel or press Enter to view in-window."
+            $validInput = $true
             $userResponse = Read-Host
             if ($userResponse -eq "x") {
                 Start-Process "excel.exe" -ArgumentList "`"$examplesDirectory\example-specs-cpu-memory.csv`""
@@ -1617,7 +1751,7 @@ if ($scriptOperation -eq "create") {
             Clear-Host
             RenderDataInputStatus
             $validInput = $false
-            $errorMessage = "Invalid input. Please enter 1 - 4, 'e', or type 'done'."
+            $errorMessage = "Invalid input. Please enter 1 - 5, 'e', 'r', or type 'done'."
         }
     }
 
@@ -1785,22 +1919,45 @@ $global:csvPath = $specsCpuMemoryInputPath; $global:csvColumn = "vCPUs"; CsvFirs
 Write-Host "     - vCPUs (vCores): $dataRange"; $specAggCPUCores = $dataRange
 $global:csvPath = $specsCpuMemoryInputPath; $global:csvColumn = "Memory-GB"; CsvFirstandLastImport
 Write-Host "     - Memory (GB)   : $dataRange"; $specAggMemory = $dataRange
-#Storage
-Write-Host "  Storage:" -ForegroundColor DarkGray
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Data-Disk-Count"; CsvFirstandLastImport
-Write-Host "     - Data Disk Count (Qty.)   : $dataRange"; $specAggDiskCount = $dataRange
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Data Disk IOPS (IOPS)    : $dataRange"; $specAggDataDiskIOPS = $dataRange
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Disk-Speed-MBps"; CsvFirstandLastImport
-Write-Host "     - Data Disk Speed (MBps)   : $dataRange"; $specAggDiskSpeed = $dataRange
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Disk-Burst-Speed-MBps"; CsvFirstandLastImport
-Write-Host "     - Disk Burst Speed (MBps)  : $dataRange"; $specAggDiskBurstSpeed = $dataRange
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Temp-Storage-Size-GB"; CsvFirstandLastImport
-Write-Host "     - Temp Storage Size (GB)   : $dataRange"; $specAggTempSize = $dataRange
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Temp-Storage-IOPS"; CsvFirstandLastImport
-Write-Host "     - Temp Storage IOPS (IOPS) : $dataRange"; $specAggTempIOPS = $dataRange
-$global:csvPath = $specsStorageInputPath; $global:csvColumn = "Temp-Storage-Speed-MBps"; CsvFirstandLastImport
-Write-Host "     - Temp Storage Speed (MBps): $dataRange"
+#Storage Local
+if ($localStoragePresent -eq $true) {
+    Write-Host "  Local Storage:" -ForegroundColor DarkGray
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-Count"; CsvFirstandLastImport
+    Write-Host "     - Max Temp Storage (Qty.)             : $dataRange"; $specAggDiskCount = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-Size-GB"; CsvFirstandLastImport
+    Write-Host "     - Temp Storage Size (GiB)             : $dataRange"; $specAggDataDiskIOPS = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-IOPS"; CsvFirstandLastImport
+    Write-Host "     - Temp ReadWrite Storage IOPS         : $dataRange"; $specAggDiskSpeed = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-MBps"; CsvFirstandLastImport
+    Write-Host "     - Temp ReadWrite Storage Speed (MBps) : $dataRange"; $specAggDiskBurstSpeed = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RO-IOPS"; CsvFirstandLastImport
+    Write-Host "     - Temp ReadOnly Storage IOPS          : $dataRange"; $specAggTempSize = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RO-MBps"; CsvFirstandLastImport
+    Write-Host "     - Temp ReadOnly Storage Speed (MBps)  : $dataRange"; $specAggTempIOPS = $dataRange
+} else {
+    Write-Host "  Local Storage:" -ForegroundColor DarkGray
+    Write-Host "    No local storage present in this series."
+}
+#Storage Remote
+Write-Host "  Remote Storage:" -ForegroundColor DarkGray
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Count"; CsvFirstandLastImport
+Write-Host "     - Max Remote Storage (Qty.)                   : $dataRange"; $specAggDiskCount = $dataRange
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-IOPS"; CsvFirstandLastImport
+Write-Host "     - Uncached Storage IOPS                       : $dataRange"; $specAggDataDiskIOPS = $dataRange
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-MBps"; CsvFirstandLastImport
+Write-Host "     - Uncached Storage Speed (MBps)               : $dataRange"; $specAggDiskSpeed = $dataRange
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-IOPS"; CsvFirstandLastImport
+Write-Host "     - Uncached Storage Burst IOPS                 : $dataRange"; $specAggDiskBurstSpeed = $dataRange
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-MBps"; CsvFirstandLastImport
+Write-Host "     - Uncached Storage Burst Speed (MBps)         : $dataRange"; $specAggTempSize = $dataRange
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-IOPS"; CsvFirstandLastImport
+Write-Host "     - Uncached Special Storage IOPS               : $dataRange"; $specAggTempIOPS = $dataRange
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-MBps"; CsvFirstandLastImport
+Write-Host "     - Uncached Special Storage Speed (MBps)       : $dataRange"
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-Burst-IOPS"; CsvFirstandLastImport
+Write-Host "     - Uncached Burst Special Storage IOPS         : $dataRange"
+$global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-Burst-MBps"; CsvFirstandLastImport
+Write-Host "     - Uncached Burst Special Storage Speed (MBps) : $dataRange"
 #Network
 Write-Host "  Network:" -ForegroundColor DarkGray
 $global:csvPath = $specsNetworkInputPath; $global:csvColumn = "NIC-count"; CsvFirstandLastImport
@@ -1913,6 +2070,34 @@ function TableCSVconvertMD {
     $global:markdownTableContent = $global:markdownTableContent -join "`n"
 }
 
+
+
+
+## DEFINE SOME INFO
+
+$noLocalStorageMessage = "> [!NOTE]
+> No local storage present in this series. For similar sizes with local storage, see the [Dpdsv6-series](./dpdsv6-series.md).
+>
+> For frequently asked questions, see [Azure VM sizes with no local temp disk](../../azure-vms-no-temp-disk.yml)."
+
+$noAcceleratorsMessage = "> [!NOTE]
+> No accelerators are present in this series."
+
+$storageLocalResAndDefs = "#### Storage resources
+- [Introduction to Azure managed disks](../../../virtual-machines/managed-disks-overview.md)
+- [Azure managed disk types](../../../virtual-machines/disks-types.md)
+- [Share an Azure managed disk](../../../virtual-machines/disks-shared.md)
+
+#### Table definitions
+- Storage capacity is shown in units of GiB or 1024^3 bytes. When you compare disks measured in GB (1000^3 bytes) to disks measured in GiB (1024^3) remember that capacity numbers given in GiB may appear smaller. For example, 1023 GiB = 1098.4 GB.
+- Disk throughput is measured in input/output operations per second (IOPS) and MBps where MBps = 10^6 bytes/sec.
+- Data disks can operate in cached or uncached modes. For cached data disk operation, the host cache mode is set to ReadOnly (R-O) or ReadWrite (R-W). For uncached data disk operation, the host cache mode is set to None.
+- To learn how to get the best storage performance for your VMs, see [Virtual machine and disk performance](../../../virtual-machines/disks-performance.md)."
+
+$seriesInPreviewMessage = "> [!NOTE]
+> Azure Virtual Machine Series Dsv6 and Ddsv6 are currently in **Preview**. See the [Preview Terms Of Use | Microsoft Azure](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) for legal terms that apply to Azure features that are in beta, preview, or otherwise not yet released into general availability.
+"
+
 # ACTUALLY CREATE ENABLED FILES
 New-Item -Path "$outputDirectory\includes" -ItemType Directory -ErrorAction SilentlyContinue
 if ($doCreateArticle -eq $true) {
@@ -1922,14 +2107,24 @@ if ($doCreateArticle -eq $true) {
     # Replace values in the template
     $articleContent = $articleContent -replace "SERIESNAMEUC", $seriesBaseName
     $articleContent = $articleContent -replace "SERIESNAMELC", $seriesBaseNameLower
+    if ($seriesInPreview -eq $true) { $articleContent = $articleContent -replace "SERIESPREVIEWMSG", $seriesInPreviewMessage } else { $articleContent = $articleContent -replace "SERIESPREVIEWMSG", "" }
     ### Table: CPU Memory
     $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-cpu-memory-specs_${seriesBaseNameLower}-series.csv"
     TableCSVconvertMD
     $articleContent = $articleContent -replace "TABLECPUMEMORY", $global:markdownTableContent
-    ### Table: Storage
-    $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-storage-specs_${seriesBaseNameLower}-series.csv"
+    ### Table: Storage Local
+    if ($localStoragePresent -eq $true) {
+        $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-storage-local-specs_${seriesBaseNameLower}-series.csv"
+        TableCSVconvertMD
+        $articleContent = $articleContent -replace "TABLESTORAGELOCAL", $global:markdownTableContent
+        $articleContent = $articleContent -replace "STORLOCALRESANDDEFS", $storageLocalResAndDefs
+    } else {
+        $articleContent = $articleContent -replace "TABLESTORAGELOCAL", "$noLocalStorageMessage" 
+        $articleContent = $articleContent -replace "STORLOCALRESANDDEFS", "" }
+    ### Table: Storage Remote
+    $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-storage-remote-specs_${seriesBaseNameLower}-series.csv"
     TableCSVconvertMD
-    $articleContent = $articleContent -replace "TABLESTORAGE", $global:markdownTableContent
+    $articleContent = $articleContent -replace "TABLESTORAGEREMOTE", $global:markdownTableContent
     ### Table: Network
     $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-network-specs_${seriesBaseNameLower}-series.csv"
     TableCSVconvertMD
@@ -1940,7 +2135,7 @@ if ($doCreateArticle -eq $true) {
         TableCSVconvertMD
         $articleContent = $articleContent -replace "TABLEACCELERATORS", $global:markdownTableContent
     } else {
-        $articleContent = $articleContent -replace "TABLEACCELERATORS", ""
+        $articleContent = $articleContent -replace "TABLEACCELERATORS", "$noAcceleratorsMessage"
     }
     ### List: Special Features
     $articleContent = $articleContent -replace "SPECIALFEATURES", $global:specialFeatureFormattedData
@@ -1949,25 +2144,40 @@ if ($doCreateArticle -eq $true) {
 
 
     ### General fixes and definitions
+    
     #### CPU and MEMORY Info
     $articleContent = $articleContent -replace "Size-Name", "Size Name"
     $articleContent = $articleContent -replace "vCPUs", "vCPUs (Qty.)"
     $articleContent = $articleContent -replace "Memory-GB", "Memory (GB)"
+    
     #### NETWORK (NIC Info)
     $articleContent = $articleContent -replace "NIC-Count", "Max NICs (Qty.)"
     $articleContent = $articleContent -replace "Bandwidth-Mbps", "Max Bandwidth (Mbps)"
-    #### STORAGE (Disk Info)
-    $articleContent = $articleContent -replace "Data-Disk-Count", "Max Data Disks"
-    $articleContent = $articleContent -replace "Disk-IOPS", "Max IOPS"
-    $articleContent = $articleContent -replace "Disk-Speed-MBps", "Disk Speed (MBps)"
-    $articleContent = $articleContent -replace "Disk-Burst-Speed-MBps", "Disk Burst Speed (MBps)"
-    $articleContent = $articleContent -replace "Temp-Storage-Size-GB", "Temp Storage Size (GB)"
-    $articleContent = $articleContent -replace "Temp-Storage-IOPS", "Temp Storage IOPS"
-    $articleContent = $articleContent -replace "Temp-Storage-Speed-MBps", "Temp Storage Speed (MBps)"
-    $articleContent = $articleContent -replace "Max-Throughput-MBps", "Max Throughput (MBps)"
+
+    #### STORAGE LOCAL (Disk Info)
+    $articleContent = $articleContent -replace "Local-Disk-Count", "Max Temp Storage (Qty.)"
+    $articleContent = $articleContent -replace "Local-Disk-Size-GB", "Temp Storage Size (GiB)"
+    $articleContent = $articleContent -replace "Local-Disk-RW-IOPS", "Temp ReadWrite Storage IOPS"
+    $articleContent = $articleContent -replace "Local-Disk-RW-MBps", "Temp ReadWrite Storage Speed (MBps)"
+    $articleContent = $articleContent -replace "Local-Disk-RO-IOPS", "Temp ReadOnly Storage IOPS"
+    $articleContent = $articleContent -replace "Local-Disk-RO-MBps", "Temp ReadOnly Storage Speed (MBps)"
+
+    #### STORAGE REMOTE (Disk Info)
+    $articleContent = $articleContent -replace "Remote-Disk-Count", "Max Remote Storage (Qty.)"
+    $articleContent = $articleContent -replace "Remote-Disk-IOPS", "Uncached Storage IOPS"
+    $articleContent = $articleContent -replace "Remote-Disk-MBps", "Uncached Storage Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Disk-Burst-IOPS", "Uncached Storage Burst<sup>1</sup> IOPS"
+    $articleContent = $articleContent -replace "Remote-Disk-Burst-MBps", "Uncached Storage Burst<sup>1</sup> Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-IOPS", "Uncached Special<sup>2</sup> Storage IOPS"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-MBps", "Uncached Special<sup>2</sup> Storage Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-IOPS", "Uncached Burst<sup>1</sup> Special2 Storage IOPS"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-MBps", "Uncached Burst<sup>1</sup> Special Storage Speed (MBps)"
+
+    
     #### ACCELERATORS (GPU Info)
     $articleContent = $articleContent -replace "Accelerator-Count", "Accelerators (Qty.)"
     $articleContent = $articleContent -replace "Accelerator-Memory-GB", "Accelerator Memory (GB)"
+    
     ## Output new file to the OUTPUT directory
     $articleContent | Set-Content -Path $seriesFileOutputPath
 }
@@ -2036,6 +2246,7 @@ if ($userResponse -eq "f") {
 Clear-Host
 Write-Host "GIT OPERATIONS" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
 Write-Host "Before continuing, we'll create a new branch for this script to utilize.`nThis will run several git commands, so make sure you don't have any unsaved work in an open branch.`nAny unsaved work will be stashed."
+Write-Host "`nWARNING: This requires that you have Git installed locally and you've set up PowerShell to use Git commands. `nIf you haven't done this, close the script and manually upload the files from the OUTPUT directory to a new PR.`n" -ForegroundColor DarkRed -BackgroundColor Yellow
 Read-Host "`nPress Enter to run git operations.`n"
 
 ## Make sure the user has a valid branch, then check out to it.

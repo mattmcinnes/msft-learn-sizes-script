@@ -11,8 +11,20 @@ ms.reviewer: mattmcinnes
 ---
 
 # SERIESNAMEUC sizes series
-
+SERIESPREVIEWMSG
 [!INCLUDE [SERIESNAMELC-summary](./includes/SERIESNAMELC-summary.md)]
+
+## Host specifications
+[!INCLUDE [SERIESNAMELC-series-specs](./includes/SERIESNAMELC-series-specs.md)]
+
+## Feature support
+- Premium Storage: Not Supported
+- Premium Storage caching: Not Supported
+- VM Generation Support: Generation 1
+- Accelerated Networking: Supported
+- Ephemeral OS Disks: Not Supported
+- Nested Virtualization: Not Supported
+- Live Migration: Supported
 
 ## Sizes in series
 
@@ -31,18 +43,15 @@ TABLECPUMEMORY
 
 Local (temp) storage info for each size
 
-TABLELOCALSTORAGE
+TABLESTORAGELOCAL
 
-> [!NOTE]
-> No local storage present in this series. For similar sizes with local storage, see the [Dpdsv6-series](./dpdsv6-series.md).
->
-> For frequently asked questions, see [Azure VM sizes with no local temp disk](../../azure-vms-no-temp-disk.yml).
+STORLOCALRESANDDEFS
 
 ### [Remote Storage](#tab/sizestorageremote)
 
 Remote (uncached) storage info for each size
 
-TABLESTORAGE
+TABLESTORAGEREMOTE
 
 #### Storage resources
 - [Introduction to Azure managed disks](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview)
@@ -81,20 +90,4 @@ TABLEACCELERATORS
 
 ---
 
-## Feature support
-
-### Supported special features
-- Live Migration: Supported
-
-### Feature limitations
-- Premium Storage: Not Supported
-- Premium Storage caching: Not Supported
-- VM Generation Support: Generation 1
-- Accelerated Networking: Supported
-- Ephemeral OS Disks: Not Supported
-- Nested Virtualization: Not Supported
-
-## Next Steps
-- Learn more about how [Azure compute units (ACU)](https://learn.microsoft.com/azure/virtual-machines/acu) can help you compare compute performance across Azure SKUs.
-- Check out [Azure Dedicated Hosts](https://learn.microsoft.com/azure/virtual-machines/dedicated-hosts) for physical servers able to host one or more virtual machines assigned to one Azure subscription.
-- Learn how to [Monitor Azure virtual machines](https://learn.microsoft.comazure/virtual-machines/monitor-vm)
+[!INCLUDE [sizes-footer](../includes/sizes-footer.md)]
