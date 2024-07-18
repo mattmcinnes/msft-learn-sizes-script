@@ -17,10 +17,12 @@ A script to create, modify, or retire Azure virtual machine sizes using the new 
 - Demo mode (for non-content devs to evaluate the script)
 -   Includes dummy "sizes folder" for those without local git clones
 - Safety checks
-  - Ensures -pr repo is selected
-  - Duplicate Github PR check (remote/local)
+  - Prevents extraneous data entry by dynamically creating input files based on host specs
   - Instructs users who to contact if they try and run an unsupported operation (multi-CPU sizes, SR-IOV) 
   - Conflicting accelerator check (a size wouldn't have both Nvidia and AMD GPUs...)
+  - Ensures -pr repo is selected
+  - Duplicate Github PR check (remote/local)
+- Compatibility with "The great divide" project
 
 ## Planned features
 - Automatic TOC entry
@@ -32,7 +34,6 @@ A script to create, modify, or retire Azure virtual machine sizes using the new 
   - Move to migrated folder
   - Create migration guide with standard format
   - Recommend new sizes (dynamic, can be re-run in the future)
-- Compatibility with "The great divide" project
 - SR-IOV flags for accelerators (what % of the accelerator do you have access to)
 - Notation of software stack compatibility (CUDA, ROCM, AVX512, etc.)
 - Pull data from REST API for preview
@@ -42,5 +43,5 @@ A script to create, modify, or retire Azure virtual machine sizes using the new 
 ## Potential features
 - Docs build preview integration
 - Auto batch runs (to keep docs perpetually up to date)
-- Support for Linux (currently calls Windows programs such as notepad and excel)
+- Support for Linux (currently calls Windows programs such as Notepad and Excel)
 - Official repo for CSV files (single source of truth, could be called by API in the future)
