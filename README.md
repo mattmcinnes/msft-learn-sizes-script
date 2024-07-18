@@ -1,6 +1,8 @@
 # Microsoft Learn Sizes Script
 A script to create, modify, or retire Azure virtual machine sizes using the new "sizes restructure project" format
 
+Current latest version: Beta 1.3
+
 ## Current features
 - Create new size series
   - Size Series file
@@ -23,6 +25,9 @@ A script to create, modify, or retire Azure virtual machine sizes using the new 
   - Ensures -pr repo is selected
   - Duplicate Github PR check (remote/local)
 - Compatibility with "The great divide" project
+- Batch mode for multiple file edits
+- Auto archival of input data for REST API team
+- Clean-up mode to prevent clutter
 
 ## Planned features
 - Automatic TOC entry
