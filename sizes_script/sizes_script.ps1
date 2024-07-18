@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.2"
+$scriptVersion = "Beta 1.3"
 
 ## Test mode
 $testMode = $false
@@ -20,11 +20,13 @@ $defaultGitDir = "C:\Users\$env:USERNAME\GitHub\$repoName"
 
 ## Important directories for the script
 $originalDirectory = Get-Location
+$archiveDirectory = "$originalDirectory\archive"
 $tempDirectory = "$originalDirectory\temp"
 $templateDirectory = "$originalDirectory\templates"
 $inputDirectory = "$originalDirectory\INPUT"
 $examplesDirectory = "$originalDirectory\examples"
 $outputDirectory = "$originalDirectory\OUTPUT"
+$batchDirectory = "$originalDirectory\BATCH"
 
 ## Today's Date
 $todayDate = Get-Date -Format "MM-dd-yyyy"
@@ -55,6 +57,10 @@ Get-ChildItem -Path $tempDirectory -Recurse | Remove-Item -Force
 New-Item -Path $tempDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
 ## Create an info file in the INPUT directory
 New-Item -Path $inputDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+## Create an info file in the archive directory
+New-Item -Path $archiveDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+## Create an info file in the BATCH directory
+New-Item -Path $batchDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
 
 
 # WELCOME MESSAGE
@@ -81,12 +87,13 @@ Write-Host "What do you plan on doing with this script?`n"
 Write-Host "    a. Create a new size series" -ForegroundColor Yellow
 Write-Host "    b. Update an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
 Write-Host "    c. Retire an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
+Write-Host "    d. Data cleanup from previous operations"
 while ($true) {
     $inputLetter = Read-Host "`nEnter the letter of the action you'd like to perform (e.g., 'a' for 'Create a new size series')`n"
-    if ($inputLetter -match '^[a-c]$') {
+    if ($inputLetter -match '^[a-d]$') {
         break
     } else {
-        Write-Host "Invalid input. Please enter a letter from 'a' to 'c'`n" -ForegroundColor Red
+        Write-Host "Invalid input. Please enter a letter from 'a' to 'd'`n" -ForegroundColor Red
     }
 }
 if ($inputLetter -eq "a") {
@@ -95,13 +102,189 @@ if ($inputLetter -eq "a") {
     $scriptOperation = "update"
 } elseif ($inputLetter -eq "c") {
     $scriptOperation = "retire"
+} elseif ($inputLetter -eq "d") {
+    $scriptOperation = "cleanup"
 }
 $scriptOpIng = $scriptOperation.Substring(0, $scriptOperation.Length - 1) + "ing"
-Write-Host "`nYou're $scriptOpIng a size series." -ForegroundColor Magenta
+if ($scriptOperation -eq "cleanup") {
+    Write-Host "`nYou're running the script in cleanup mode." -ForegroundColor Magenta
+} else {
+    Write-Host "`nYou're $scriptOpIng a size series." -ForegroundColor Magenta
+}
+
 
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
+
+## CLEANUP OPERATION
+if ($scriptOperation -eq "cleanup") {
+    Write-Host "CLEANUP OPERATION" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "This operation will remove all files in the 'OUTPUT', 'INPUT', and 'BATCH' directories.`n" -ForegroundColor Red
+    Write-Host "WARNING: This operation cannot be undone. Please ensure you have backed up any important data before continuing.`n" -ForegroundColor Red
+    Write-Host "NOTE: This operation will not remove any files in the 'archive' directory.`n" -ForegroundColor Yellow
+    while ($true) {
+        $userResponse = Read-Host "Type 'e' to erase the .\OUTPUT, .\INPUT, and .\BATCH directories and continue`n"
+        if ($userResponse -eq "e") {
+            break
+        } else {
+            Write-Host "Invalid input. Please type 'e' to erase the .\OUTPUT and .\INPUT directories and continue`n" -ForegroundColor Red
+        }
+    }
+    Get-ChildItem -Path $outputDirectory -Recurse | Remove-Item -Force -Recurse
+    Get-ChildItem -Path $inputDirectory -Recurse | Remove-Item -Force -Recurse
+    Get-ChildItem -Path $batchDirectory -Recurse | Remove-Item -Force -Recurse
+    Write-Host "`nErasing old files."
+    Write-Host "`nThe script will now reset" -NoNewline; DelayDots
+    .\sizes_script.ps1
+}
+
+# SINGLE RUN OR BATCH MODE
+Clear-Host
+$showMessage = $false
+$invalidInput = $false
+$batchMode = $false
+$validContinue = $false
+$validSelect = $null
+$readOnlyMode = $false
+
+
+$filesInBatch = Get-ChildItem -Path $batchDirectory -File
+if ($filesInBatch.Count -gt 0) {
+    $filesinBatchDir = $true
+    $showMessage = $true
+    $showMessageContent = "It looks like there is a batch operation in progress from a previous run. Select Batch run to continue this operation."
+}
+
+while ($true) {
+    Write-Host "BATCH MODE TOGGLE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "Are you running this script as a part of a batch operation (i.e. multiple sizes in one PR), a single series run, or a read-only run?`n"
+    if ($validSelect -eq "a") { Write-Host "   [a. Single run]" -ForegroundColor Green } else { Write-Host "    a. Single run" }
+    Write-Host "        - This script will run once and create files for a single series." -ForegroundColor DarkGray
+    Write-Host "        - Markdown files will be stored in the 'OUTPUT' directory" -ForegroundColor DarkGray
+    Write-Host " "
+    if ($validSelect -eq "b") { Write-Host "   [b. Batch run]" -ForegroundColor Green } else { Write-Host "    b. Batch run" }
+    Write-Host "        - You can run this script multiple times to create a single PR with multiple sizes affected." -ForegroundColor DarkGray
+    Write-Host "        - Markdown files are moved to a newly created 'BATCH' after script completion." -ForegroundColor DarkGray
+    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "NOTE:" -BackgroundColor DarkYellow -NoNewline ; Write-Host " The 'OUTPUT' folder will only contain per-run files." -ForegroundColor DarkGray
+    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "WARNING:" -BackgroundColor Red -NoNewline ; Write-Host " Do not mix size types in batch mode (1 compute-optimized size + 2 general-purpose sizes)." -ForegroundColor DarkGray
+    Write-Host " "
+    if ($validSelect -eq "c") { Write-Host "   [c. Read-only run]" -ForegroundColor Green } else { Write-Host "    c. Read-only run" }
+    Write-Host "        - Read-only mode clears out the script's OUTPUT folder for future runs." -ForegroundColor DarkGray
+    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "WARNING:" -BackgroundColor Red -NoNewline ; Write-Host " No data will be saved after the script is finished." -ForegroundColor DarkGray
+
+
+    if ($invalidInput -eq $true) { Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Red }
+    if ($showMessage -eq $true -and $invalidInput -eq $false) { Write-Host "`n$showMessageContent`n" -ForegroundColor Magenta }
+    if ($showMessage -eq $false -and $invalidInput -eq $false) { Write-Host "`n`n" }
+
+    Write-Host "Enter a letter 'a - 'c' to select the script operation and move files accordingly.`n"
+
+    $userResponse = Read-Host
+    if ($userResponse -eq "a") {
+        $showMessageContent = "Script is in single-run mode. Press Enter to continue"
+        $batchMode = $false ; $readOnlyMode = $false
+        $showMessage = $true ; $validContinue = $true ; $invalidInput = $false
+        $validSelect = "a"
+        Clear-Host
+    } elseif ($userResponse -eq "b") {
+        $showMessageContent = "Script is in batch mode. Press Enter to continue"
+        $batchMode = $true ; $readOnlyMode = $false
+        $showMessage = $true ; $validContinue = $true ; $invalidInput = $false
+        $validSelect = "b"
+        Clear-Host
+    } elseif ($userResponse -eq "c") {
+        $showMessageContent = "Script is in read-only mode. Press Enter to continue"
+        $batchMode = $false ; $readOnlyMode = $true
+        $showMessage = $true
+        $validContinue = $true
+        $validSelect = "c"
+        Clear-Host
+    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
+        Write-Host "`nContinuing...:"
+        Clear-Host
+        break
+    } else {
+        Clear-Host
+        $invalidInput = $true
+    }
+}
+
+
+# DATA WARNING AND RESET
+ 
+if ($batchMode -eq $false) {
+    Write-Host "DATA RESET" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "WARNING:"`
+    "ALL FILES IN THE SCRIPT 'OUTPUT' and 'INPUT' DIRECTORY WILL BE REMOVED!"`
+    "`nIf you've used this script previously there might be important data in these directories."`
+    "`nPlease move all data to a safe location or ensure it can be erased before continuing." -ForegroundColor Red
+
+    Write-Host "
+    Output Directory: 
+        - Path: $outputDirectory
+        - Operation: All data deleted
+
+    Input Directory: 
+        - Path: $inputDirectory
+        - Operation: Data moved to 'archive' directory
+    " -ForegroundColor Yellow
+
+    if ($demoMode -eq $true) {
+        Write-Host "`nNOTE: Demo mode is enabled but the script will still erase the INPUT directory and create new files.`n" -ForegroundColor DarkYellow
+    }
+    while ($true) {
+        if ($testMode -eq $true) {
+            $userResponse = "e"
+        } else {
+            $userResponse = Read-Host "`nType 'e' to erase the .\OUTPUT directory and continue`n"
+        }
+        if ($userResponse -eq "e") {
+            break
+        } else {
+            Write-Host "Invalid input. Please type 'e' to erase the .\OUTPUT directory and continue`n"
+        }
+    }
+    Get-ChildItem -Path $outputDirectory -Recurse | Remove-Item -Force
+    Get-ChildItem -Path $inputDirectory -Recurse | Move-Item -Destination $archiveDirectory -Force
+    Write-Host "`nErasing old files and creating new working files for the $seriesBaseName series"
+} else {
+    Write-Host "DATA MIGRATION" -BackgroundColor DarkYellow -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "WARNING:"`
+    "ALL FILES IN THE SCRIPT 'OUTPUT' and 'INPUT' DIRECTORY WILL BE MOVED!"`
+    "`nIf you've used this script previously for non-batch operations there might be data in these directories you do not want in the batch."`
+    "`nPlease move all non-batch data to a safe location or manually erase it before continuing." -ForegroundColor Yellow
+
+    Write-Host "
+    Output Directory: 
+        - Path: $outputDirectory
+        - Operation: All data moved to 'BATCH' directory
+
+    Input Directory: 
+        - Path: $inputDirectory
+        - Operation: Data moved to 'archive' directory
+    " -ForegroundColor DarkGray
+    Read-Host "`nClose the script to cancel. Press Enter to continue.`n"
+
+    $fileCount = 0
+    $outputFiles = Get-ChildItem -Path $outputDirectory -Recurse
+    foreach ($file in $outputFiles) {
+        $file | Move-Item -Destination $batchDirectory -Force
+        $fileCount++
+    }
+    Write-Host "`n$fileCount files moved from OUTPUT to BATCH directory" -ForegroundColor Green
+
+    $fileCount = 0
+    $inputFiles = Get-ChildItem -Path $inputDirectory -Recurse
+    foreach ($file in $inputFiles) {
+        $file | Move-Item -Destination $archiveDirectory -Force
+        $fileCount++
+    }
+    Write-Host "`n$fileCount files moved from INPUT to archive directory" -ForegroundColor Green
+
+    Read-Host "`nOperations complete. Press Enter to continue.`n"
+    Clear-Host
+}
 
 # IS LOCAL GIT DIRECTORY DEFAULT?
 $gitDirInput = "C:\Users\$env:USERNAME\GitHub\$repoName"
@@ -376,7 +559,6 @@ while ($validFileSelect -eq $false) {
     Write-Host "`nYou're now working on: $seriesSelected" -ForegroundColor Magenta
     Write-Host "  type: $seriesTypeFancy`n" -ForegroundColor DarkGray
     Read-Host "`nPress Enter to continue`n"
-    Clear-Host
 
 
 
@@ -411,32 +593,6 @@ while ($validFileSelect -eq $false) {
     }     
 }
 
-# DATA RESET 
-Write-Host "DATA RESET" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-$dataWarning = "WARNING:
-ALL FILES IN THE SCRIPT 'INPUT' DIRECTORY WILL BE DELETED!
-
-Input Directory: ($inputDirectory)
-
-If you've used this script previously and entered data into INPUT files that you'd like to keep, move it out of this directory or it will be erased."
-Write-Host $dataWarning -ForegroundColor Red
-if ($demoMode -eq $true) {
-    Write-Host "`nNOTE: Demo mode is enabled but the script will still erase the INPUT directory and create new files.`n" -ForegroundColor DarkYellow
-}
-while ($true) {
-    if ($testMode -eq $true) {
-        $userResponse = "e"
-    } else {
-        $userResponse = Read-Host "`nType 'e' to erase the .\INPUT directory and continue`n"
-    }
-    if ($userResponse -eq "e") {
-        break
-    } else {
-        Write-Host "Invalid input. Please type 'e' to erase the .\INPUT directory and continue`n"
-    }
-}
-Get-ChildItem -Path $inputDirectory -Recurse | Remove-Item -Force
-Write-Host "`nErasing old files and creating new working files for the $seriesBaseName series"
 
 
 if ($scriptOperation -eq "create") {
@@ -476,9 +632,6 @@ if ($scriptOperation -eq "create") {
     } else {
         Copy-Item -Path "$templateDirectory\temp-sizes-name-list.csv" -Destination "${sizesNamesListINPUTLocalPath}"
     }
-
-    Write-Host "`nFiles created and copied!"
-    Read-Host "`nPress Enter to continue`n"
     Clear-Host
 
 
@@ -2237,7 +2390,29 @@ if ($userResponse -eq "f") {
     Read-Host "`nPress Enter to continue`n"
 }
 
+if ($batchMode -eq $true) {
+    Write-Host "`nBatch mode is enabled. 'OUTPUT' files will now be moved to the 'BATCH' directory.`n" -ForegroundColor Yellow
+    $fileCount = 0
+    $inputFiles = Get-ChildItem -Path $outputDirectory -Recurse
+    foreach ($file in $inputFiles) {
+        Move-Item -Path $file.FullName -Destination $batchDirectory -Force
+        $fileCount++
+    }
+    Write-Host "`n$fileCount files moved from OUTPUT to BATCH directory" -ForegroundColor Green
 
+    Write-Host "`nWould you like to run the script again and $scriptOperation another series for the batch operation?`n" -ForegroundColor Yellow
+    $userResponse = Read-Host "Enter 'y' to run again or 'n' to exit"
+    if ($userResponse -eq "y") {
+        Write-Host "Restarting script for next series" -ForegroundColor Yellow -NoNewline
+        DelayDots
+        Clear-Host
+        .\sizes_script.ps1
+    } else {
+        Write-Host "`nExiting script...`n" -ForegroundColor Yellow
+        exit 0
+    }
+
+}
 
 
 
