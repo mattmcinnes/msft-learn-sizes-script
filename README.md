@@ -28,6 +28,8 @@ Current latest version: Beta 1.3
 - Batch mode for multiple file edits
 - Auto archival of input data for REST API team
 - Clean-up mode to prevent clutter
+- Supports series with multiple CPU models
+- Microsoft and GitHub alias entry
 
 ## Planned features
 - Automatic TOC entry
