@@ -291,7 +291,7 @@ while ($true) {
 
 
 # DATA WARNING AND RESET
- 
+Clear-Host 
 if ($batchMode -eq $false) {
     Write-Host "DATA RESET" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "WARNING:"`
