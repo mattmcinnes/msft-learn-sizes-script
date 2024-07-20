@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.3"
+$scriptVersion = "Beta 1.4"
 
 ## Test mode
 $testMode = $false
@@ -210,6 +210,85 @@ while ($true) {
     }
 }
 
+# ALIAS ENTRY
+
+## Microsoft Alias
+$validInput = $true
+$showMessage = $false
+$validContinue = $false
+while ($true) {
+    Clear-Host
+    Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - MS Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "What is your Microsoft Alias (for ms.author).`n"
+    Write-Host "NOTE: You will enter your GitHub alias in the next step." -ForegroundColor DarkYellow
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+    if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your Microsoft alias`n"
+    } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
+    if ($userResponse -ne "") {
+        $validInput = $true
+        $validContinue = $true
+        $showMessage = $true
+        $msftAlias = $userResponse
+        $messageText = "Hello $msftAlias!"
+    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
+        break
+    } elseif ($testMode -eq $true) {
+        $validInput = $true
+        $showMessage = $false
+        Write-Host "Test mode is enabled. Setting defaults..."
+        Read-Host "`nPress Enter to continue`n"
+        break
+    } else { 
+        $validInput = $false
+        $showMessage = $false
+        $errorMessage = "Invalid input. Please enter your alias."
+    }
+}
+
+## GitHub Alias
+$validInput = $true
+$showMessage = $false
+$validContinue = $false
+while ($true) {
+    Clear-Host
+    Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - GitHub Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "What is your GitHub Alias (for author and topic notifications)`n"
+    Write-Host "NOTE: If your GitHub alias is the same as your Microsoft alias, entering 's' will reuse the previous value." -ForegroundColor DarkYellow
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+    if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your GitHub alias`n"
+    } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
+    if ($userResponse -ne "" -and $userResponse -ne "s") {
+        $validInput = $true
+        $validContinue = $true
+        $showMessage = $true
+        $gitAlias = $userResponse
+        $messageText = "Hello $gitAlias!"
+    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
+        break
+    } elseif ($userResponse -eq "s") {
+        $validInput = $true
+        $showMessage = $true
+        $validContinue = $true
+        $gitAlias = $msftAlias
+        $messageText = "Hello again, $gitAlias!"
+    } elseif ($testMode -eq $true) {
+        $validInput = $true
+        $showMessage = $false
+        Write-Host "Test mode is enabled. Setting defaults..."
+        Read-Host "`nPress Enter to continue`n"
+        break
+    } else { 
+        $validInput = $false
+        $showMessage = $false
+        $errorMessage = "Invalid input. Please enter your alias."
+    }
+}
+
+
 
 # DATA WARNING AND RESET
  
@@ -247,7 +326,9 @@ if ($batchMode -eq $false) {
     }
     Get-ChildItem -Path $outputDirectory -Recurse | Remove-Item -Force
     Get-ChildItem -Path $inputDirectory -Recurse | Move-Item -Destination $archiveDirectory -Force
-    Write-Host "`nErasing old files and creating new working files for the $seriesBaseName series"
+    Write-Host "`nErasing old files" -NoNewline
+    DelayDots
+    Clear-Host
 } else {
     Write-Host "DATA MIGRATION" -BackgroundColor DarkYellow -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "WARNING:"`
@@ -595,6 +676,7 @@ while ($validFileSelect -eq $false) {
 
 
 
+
 if ($scriptOperation -eq "create") {
     # CREATE OPERATIONS
 
@@ -753,273 +835,318 @@ if ($scriptOperation -eq "create") {
         }
     }
 
-    # CPU ARCHITECTURE
-    $hwArch = $null; if ($testMode -eq $true) { $hwArch = "x86-64" }
+    # DEFINE THE PROCESSOR CPU INFO
+    ## CPU COUNT
+    $hwCpuModelCount = $null; if ($testMode -eq $true) { $hwCpuModelCount = "1" }
     $validInput = $true
     $showMessage = $false
-    $retryCount = 0
-    $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\CPU" -Directory
+    $validContinue = $false
+    $hwCpuModelIteration = 1
     while ($true) {
         Clear-Host
-        Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Architecture" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-        Write-Host "What architecture is the host CPU?`n"
-        Write-Host "NOTE: The most common CPU architecture on Azure is" -NoNewline -ForegroundColor DarkYellow; Write-Host " x86-64.`n" -ForegroundColor Yellow
-        Write-Host "  CPU Architectures:" -ForegroundColor DarkGray
-        while ($true) {
-            $counter = 0
-            foreach ($dir in $hardwareTypes) {
-                # Output the file name and its assigned letter
-                $counter++
-                if ($dir.Name -eq $hwArch) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } elseif ($dir.Name -eq "x86-64" -and $dir.Name -ne $hwArch) { Write-Host "     $counter. $($dir.Name)" -ForegroundColor Yellow } else { Write-Host "     $counter. $($dir.Name)" }
-                
-            }
-            $maxValidReadEntries = $counter
-            $counter++
-            Write-Host "     $counter. Other"
-            break
-        }
+        Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Count" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+        Write-Host "How many different CPU models are represented in this series' host? A single series could use either one of multiple generations of a CPU.`n"
+        Write-Host "NOTE: Most series only utilize one CPU model.`n" -ForegroundColor DarkYellow
         if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
         if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
-        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
-        ### Input Message ###
-        if ($retryCount -eq 0) {
-            $userResponse = Read-Host "Select the CPU architecture from the list above`n"
-            $showMessage = $true
-        } else {
-            $userResponse = Read-Host "Press Enter to continue or enter a different number to select another architecture`n"
-            $showMessage = $true
-        }
-        ### Actual Input
-        if ($userResponse -eq "" -and $retryCount -eq 0) {
-            $validInput = $false
-            $showMessage = $false
-            $errorMessage = "Please select a CPU architecture."
-        } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
-            break
-        } elseif ($userResponse -eq "$counter") {
-            $validInput = $false
-            $showMessage = $false
-            $hwArch = $null
-            $errorMessage = "Please contact the content dev team to add a new CPU architecture."
-        } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+        if ($validContinue -eq $false) { $userResponse = Read-Host "Enter the number of CPUs present on the host`n"
+        } else { $userResponse = Read-Host "Press Enter to continue or enter a different number to select another CPU count`n" }
+        if ($userResponse -match "^[1-9]$") {
             $validInput = $true
+            $validContinue = $true
             $showMessage = $true
-            $hwArch = $hardwareTypes[$userResponse - 1].Name
-            $messageText = "CPU architecture set to $hwArch"
-            $retryCount++
-        } else {
-            if ($testMode -eq $true) {
-                $validInput = $true
-                $showMessage = $false
-                Write-Host = "Test mode is enabled. Setting defaults..."
-                Read-Host "`nPress Enter to continue`n"
-                break
-            } else { 
-                $validInput = $false
-                $showMessage = $false
-                $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
-            }
+            $hwCpuModelCount = $userResponse
+            $messageText = "CPU count set to $hwCpuModelCount"
+        } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
+            break
+        } elseif ($testMode -eq $true) {
+            $validInput = $true
+            $showMessage = $false
+            Write-Host "Test mode is enabled. Setting defaults..."
+            Read-Host "`nPress Enter to continue`n"
+            break
+        } else { 
+            $validInput = $false
+            $showMessage = $false
+            $errorMessage = "Invalid input. Please enter a number from 1 to 9."
         }
     }
 
-    #CPU OEM
-    $hwOem = $null; if ($testMode -eq $true) { $hwOem = "Intel" }
-    $validInput = $true
-    $showMessage = $false
-    $retryCount = 0
-    $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\CPU\${hwArch}" -Directory
-    while ($true) {
-        Clear-Host
-        Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU OEM" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-        Write-Host "What is the OEM (manufacturer) of the CPU?`n"
-        Write-Host "  ${hwArch} CPU OEMs:" -ForegroundColor DarkGray
+    $processorSKU = ""
+    while ($hwCpuModelIteration -le $hwCpuModelCount) {
+        # CPU ARCHITECTURE
+        $hwArch = $null; if ($testMode -eq $true) { $hwArch = "x86-64" }
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\CPU" -Directory
         while ($true) {
-            $counter = 0
-            foreach ($dir in $hardwareTypes) {
-                # Output the file name and its assigned letter
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline
+            if ($hwCpuModelCount -gt 1 ) { Write-Host " - CPU Architecture" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            } else { Write-Host " - CPU Architecture (Iteration ${hwCpuModelIteration})" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green }
+            if ($hwCpuModelCount -gt 1) { Write-Host "What architecture is CPU #${hwCpuModelCount}?`n" } else { Write-Host "What architecture is the host CPU?`n" }
+            Write-Host "NOTE: The most common CPU architecture on Azure is" -NoNewline -ForegroundColor DarkYellow; Write-Host " x86-64.`n" -ForegroundColor Yellow
+            Write-Host "  CPU Architectures:" -ForegroundColor DarkGray
+            while ($true) {
+                $counter = 0
+                foreach ($dir in $hardwareTypes) {
+                    # Output the file name and its assigned letter
+                    $counter++
+                    if ($dir.Name -eq $hwArch) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } elseif ($dir.Name -eq "x86-64" -and $dir.Name -ne $hwArch) { Write-Host "     $counter. $($dir.Name)" -ForegroundColor Yellow } else { Write-Host "     $counter. $($dir.Name)" }
+                }
+                $maxValidReadEntries = $counter
                 $counter++
-                if ($dir.Name -eq $hwOem) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } else { Write-Host "     $counter. $($dir.Name)" }
-            }
-            $maxValidReadEntries = $counter
-            $counter++
-            Write-Host "     $counter. Other"
-            break
-        }
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
-        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
-        ### Input Portion ###
-        if ($retryCount -eq 0) {
-            $userResponse = Read-Host "Select the CPU OEM from the list above`n"
-            $showMessage = $true
-        } else {
-            $userResponse = Read-Host "Press Enter to continue or enter a different number to select another OEM`n"
-            $showMessage = $true
-        }
-        ### Actual Input
-        if ($userResponse -eq "" -and $retryCount -eq 0) {
-            $validInput = $false
-            $showMessage = $false
-            $errorMessage = "Please select a CPU OEM."
-        } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
-            break
-        } elseif ($userResponse -eq "$counter") {
-            $validInput = $false
-            $showMessage = $false
-            $hwOem = $null
-            $errorMessage = "Please contact the content dev team to add a new CPU OEM."
-        } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
-            $validInput = $true
-            $showMessage = $true
-            $hwOem = $hardwareTypes[$userResponse - 1].Name
-            $messageText = "CPU OEM set to $hwOem"
-            $retryCount++
-        } else {
-            if ($testMode -eq $true) {
-                $validInput = $true
-                $showMessage = $false
-                Write-Host = "Test mode is enabled. Setting defaults..."
-                Read-Host "`nPress Enter to continue`n"
+                Write-Host "     $counter. Other"
                 break
-            } else { 
+            }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+            ### Input Message ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "Select the CPU architecture from the list above`n"
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different number to select another architecture`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
                 $validInput = $false
                 $showMessage = $false
-                $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
-            }
-        }
-    }
-
-
-    #CPU BRAND
-    $hwBrand = $null; if ($testMode -eq $true) { $hwBrand = "Xeon" }
-    $validInput = $true
-    $showMessage = $false
-    $retryCount = 0
-    $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\CPU\${hwArch}\${hwOem}"
-    while ($true) {
-        Clear-Host
-        Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Brand" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-        Write-Host "What is the brand (first part of the name) of the CPU?`n"
-        Write-Host "  ${hwOem} ${hwArch} CPU Names:" -ForegroundColor DarkGray
-        while ($true) {
-            $counter = 0
-            foreach ($file in $hardwareTypes) {
-                # Output the file name and its assigned letter
-                $counter++
-                if ($file.Name -eq $hwBrand) { Write-Host "   [ $counter. $($file.Name) ]" -ForegroundColor Green } else { Write-Host "     $counter. $($file.Name)" }
-            }
-            $maxValidReadEntries = $counter
-            $counter++
-            Write-Host "     $counter. Other"
-            break
-        }
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
-        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
-        ### Input Portion ###
-        if ($retryCount -eq 0) {
-            $userResponse = Read-Host "Select the CPU brand from the list above`n"
-            $showMessage = $true
-        } else {
-            $userResponse = Read-Host "Press Enter to continue or enter a different number to select another brand`n"
-            $showMessage = $true
-        }
-        ### Actual Input
-        if ($userResponse -eq "" -and $retryCount -eq 0) {
-            $validInput = $false
-            $showMessage = $false
-            $errorMessage = "Please select a CPU brand."
-        } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
-            break
-        } elseif ($userResponse -eq "$counter") {
-            $validInput = $false
-            $showMessage = $false
-            $hwBrand = $null
-            $errorMessage = "Please contact the content dev team to add a new CPU brand."
-        } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
-            $validInput = $true
-            $showMessage = $true
-            $hwBrand = $hardwareTypes[$userResponse - 1].Name
-            $messageText = "CPU brand set to $hwBrand"
-            $retryCount++
-        } else {
-            if ($testMode -eq $true) {
-                $validInput = $true
-                $showMessage = $false
-                Write-Host = "Test mode is enabled. Setting defaults..."
-                Read-Host "`nPress Enter to continue`n"
+                $errorMessage = "Please select a CPU architecture."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
                 break
-            } else { 
+            } elseif ($userResponse -eq "$counter") {
                 $validInput = $false
                 $showMessage = $false
-                $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
-            }
-        }
-    }
-
-
-
-    # ASK ABOUT THE CPU MODEL
-    $hwModel = $null; if ($testMode -eq $true) { $hwModel = "8088 v512" }
-    $hwModelCopy = "<model>"
-    $validInput = $true
-    $showMessage = $false
-    $retryCount = 0
-    while ($true) {
-        Clear-Host
-        Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Model Info" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-        Write-Host "What is the rest of the CPU's model name/number (rest of the name after ${hwBrand})`n"
-        Write-Host "NOTE: If the series uses Intel Xeon CPUs, the CPU might be a 'Xeon E5-2699 v4' or an 'Xeon Platinum 8380H'.`nYou would enter 'E5-2699 v4' and 'Platinum 8380H' respectively`n" -ForegroundColor DarkYellow
-        Write-Host "  Full CPU name:" -ForegroundColor DarkGray
-        if ($hwModel -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModelCopy}" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} <model>" }
-
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
-        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
-
-        ### Input Portion ###
-        if ($retryCount -eq 0) {
-            $userResponse = Read-Host "${hwOem} ${hwBrand} "
-            $showMessage = $true
-        } else {
-            $userResponse = Read-Host "Press Enter to continue or enter a different model`n"
-            $showMessage = $true
-        }
-        ### Actual Input
-        if ($userResponse -eq "" -and $retryCount -eq 0) {
-            $validInput = $false
-            $showMessage = $false
-            $errorMessage = "Please enter a CPU model."
-        } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
-            break
-        } elseif ($userResponse -match "${hwBrand}" -or $userResponse -match "${hwOem}") {
-            $validInput = $false
-            $errorMessage = "Do not enter the CPU oem or brand. Just enter the specific CPU model name."
-        } else {
-            if ($testMode -eq $true) {
-                Write-Host "Script is in Test mode. Setting defaults..." -ForegroundColor Green 
-                $validInput = $true
-                $showMessage = $false
-                Read-Host "`nPress Enter to continue`n"
-                break
-            } else { 
+                $hwArch = $null
+                $errorMessage = "Please contact the content dev team to add a new CPU architecture."
+            } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
                 $validInput = $true
                 $showMessage = $true
-                $hwModel = $userResponse
-                $messageText = "CPU model set to ${hwModel}"    
-                $hwModelCopy = $hwModel
+                $hwArch = $hardwareTypes[$userResponse - 1].Name
+                $messageText = "CPU architecture set to $hwArch"
                 $retryCount++
+            } else {
+                if ($testMode -eq $true) {
+                    $validInput = $true
+                    $showMessage = $false
+                    Write-Host = "Test mode is enabled. Setting defaults..."
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $false
+                    $showMessage = $false
+                    $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
+                }
             }
         }
+
+        #CPU OEM
+        $hwOem = $null; if ($testMode -eq $true) { $hwOem = "Intel" }
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\CPU\${hwArch}" -Directory
+        while ($true) {
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU OEM" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "What is the OEM (manufacturer) of the CPU?`n"
+            Write-Host "  ${hwArch} CPU OEMs:" -ForegroundColor DarkGray
+            while ($true) {
+                $counter = 0
+                foreach ($dir in $hardwareTypes) {
+                    # Output the file name and its assigned letter
+                    $counter++
+                    if ($dir.Name -eq $hwOem) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } else { Write-Host "     $counter. $($dir.Name)" }
+                }
+                $maxValidReadEntries = $counter
+                $counter++
+                Write-Host "     $counter. Other"
+                break
+            }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+            ### Input Portion ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "Select the CPU OEM from the list above`n"
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different number to select another OEM`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please select a CPU OEM."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
+                break
+            } elseif ($userResponse -eq "$counter") {
+                $validInput = $false
+                $showMessage = $false
+                $hwOem = $null
+                $errorMessage = "Please contact the content dev team to add a new CPU OEM."
+            } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
+                $validInput = $true
+                $showMessage = $true
+                $hwOem = $hardwareTypes[$userResponse - 1].Name
+                $messageText = "CPU OEM set to $hwOem"
+                $retryCount++
+            } else {
+                if ($testMode -eq $true) {
+                    $validInput = $true
+                    $showMessage = $false
+                    Write-Host = "Test mode is enabled. Setting defaults..."
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $false
+                    $showMessage = $false
+                    $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
+                }
+            }
+        }
+
+
+        #CPU BRAND
+        $hwBrand = $null; if ($testMode -eq $true) { $hwBrand = "Xeon" }
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        $hardwareTypes = Get-ChildItem -Path "${hardwareDirectory}\CPU\${hwArch}\${hwOem}"
+        while ($true) {
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Brand" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "What is the brand (first part of the name) of the CPU?`n"
+            Write-Host "  ${hwOem} ${hwArch} CPU Names:" -ForegroundColor DarkGray
+            while ($true) {
+                $counter = 0
+                foreach ($file in $hardwareTypes) {
+                    # Output the file name and its assigned letter
+                    $counter++
+                    if ($file.Name -eq $hwBrand) { Write-Host "   [ $counter. $($file.Name) ]" -ForegroundColor Green } else { Write-Host "     $counter. $($file.Name)" }
+                }
+                $maxValidReadEntries = $counter
+                $counter++
+                Write-Host "     $counter. Other"
+                break
+            }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+            ### Input Portion ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "Select the CPU brand from the list above`n"
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different number to select another brand`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please select a CPU brand."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
+                break
+            } elseif ($userResponse -eq "$counter") {
+                $validInput = $false
+                $showMessage = $false
+                $hwBrand = $null
+                $errorMessage = "Please contact the content dev team to add a new CPU brand."
+            } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
+                $validInput = $true
+                $showMessage = $true
+                $hwBrand = $hardwareTypes[$userResponse - 1].Name
+                $messageText = "CPU brand set to $hwBrand"
+                $retryCount++
+            } else {
+                if ($testMode -eq $true) {
+                    $validInput = $true
+                    $showMessage = $false
+                    Write-Host = "Test mode is enabled. Setting defaults..."
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $false
+                    $showMessage = $false
+                    $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
+                }
+            }
+        }
+
+
+
+        # ASK ABOUT THE CPU MODEL
+        $hwModel = $null; if ($testMode -eq $true) { $hwModel = "8088 v512" }
+        $hwModelCopy = "<model>"
+        $validInput = $true
+        $showMessage = $false
+        $retryCount = 0
+        while ($true) {
+            Clear-Host
+            Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Model Info" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+            Write-Host "What is the rest of the CPU's model name/number (rest of the name after ${hwBrand})`n"
+            Write-Host "NOTE: If the series uses Intel Xeon CPUs, the CPU might be a 'Xeon E5-2699 v4' or an 'Xeon Platinum 8380H'.`nYou would enter 'E5-2699 v4' and 'Platinum 8380H' respectively`n" -ForegroundColor DarkYellow
+            Write-Host "  Full CPU name:" -ForegroundColor DarkGray
+            if ($hwModel -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModelCopy}" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} <model>" }
+
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
+
+            ### Input Portion ###
+            if ($retryCount -eq 0) {
+                $userResponse = Read-Host "${hwOem} ${hwBrand} "
+                $showMessage = $true
+            } else {
+                $userResponse = Read-Host "Press Enter to continue or enter a different model`n"
+                $showMessage = $true
+            }
+            ### Actual Input
+            if ($userResponse -eq "" -and $retryCount -eq 0) {
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Please enter a CPU model."
+            } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
+                break
+            } elseif ($userResponse -match "${hwBrand}" -or $userResponse -match "${hwOem}") {
+                $validInput = $false
+                $errorMessage = "Do not enter the CPU oem or brand. Just enter the specific CPU model name."
+            } else {
+                if ($testMode -eq $true) {
+                    Write-Host "Script is in Test mode. Setting defaults..." -ForegroundColor Green 
+                    $validInput = $true
+                    $showMessage = $false
+                    Read-Host "`nPress Enter to continue`n"
+                    break
+                } else { 
+                    $validInput = $true
+                    $showMessage = $true
+                    $hwModel = $userResponse
+                    $messageText = "CPU model set to ${hwModel}"    
+                    $hwModelCopy = $hwModel
+                    $retryCount++
+                }
+            }
+        }
+
+        #FINAL INFO FOR WRITING
+        if ($hwCpuModelIteration -eq 1) {
+            $processorSKU = "${hwOem} ${hwBrand} ${hwModelCopy} [${hwArch}]"
+        } else { 
+            $processorSKU = "${processorSKU} <br>${hwOem} ${hwBrand} ${hwModelCopy} [${hwArch}]" }
+        $cpuOem = $hwOem
+        $cpuBrand = $hwBrand
+        $cpuModel = $hwModel
+        $cpuArch = $hwArch
+        $hwCpuModelIteration++
     }
-
-    #FINAL INFO FOR WRITING
-    $processorSKU = "${hwOem} ${hwBrand} ${hwModelCopy} (${hwArch})"
-    $cpuOem = $hwOem
-    $cpuBrand = $hwBrand
-    $cpuModel = $hwModel
-    $cpuArch = $hwArch
-
 
     <#
     # Memory Info
@@ -2067,7 +2194,12 @@ Write-Host "CONTENT REVIEW" -BackgroundColor Blue -NoNewline; Write-Host " - Pag
 Write-Host "Let's go through the tables for the $seriesSelected series.`nHere's the information we have:`n"
 #CPU and Memory
 Write-Host "  CPU and Memory:" -ForegroundColor DarkGray
-Write-Host "    $processorSKU CPU" 
+if ($hwCpuModelCount -eq 1) { 
+    Write-Host "    $processorSKU CPU" 
+} else { 
+    $processorSKUPretty = $processorSKU -replace "<br>", ", "
+    Write-Host "    $processorSKUPretty CPUs" 
+}
 $global:csvPath = $specsCpuMemoryInputPath; $global:csvColumn = "vCPUs"; CsvFirstandLastImport
 Write-Host "     - vCPUs (vCores): $dataRange"; $specAggCPUCores = $dataRange
 $global:csvPath = $specsCpuMemoryInputPath; $global:csvColumn = "Memory-GB"; CsvFirstandLastImport
@@ -2076,17 +2208,17 @@ Write-Host "     - Memory (GB)   : $dataRange"; $specAggMemory = $dataRange
 if ($localStoragePresent -eq $true) {
     Write-Host "  Local Storage:" -ForegroundColor DarkGray
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-Count"; CsvFirstandLastImport
-    Write-Host "     - Max Temp Storage (Qty.)             : $dataRange"; $specAggDiskCount = $dataRange
+    Write-Host "     - Max Temp Storage (Qty.)             : $dataRange"; $specAggLocalDiskCount = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-Size-GB"; CsvFirstandLastImport
-    Write-Host "     - Temp Storage Size (GiB)             : $dataRange"; $specAggDataDiskIOPS = $dataRange
+    Write-Host "     - Temp Storage Size (GiB)             : $dataRange"; $specAggLocalDiskSize = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-IOPS"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadWrite Storage IOPS         : $dataRange"; $specAggDiskSpeed = $dataRange
+    Write-Host "     - Temp ReadWrite Storage IOPS         : $dataRange"; $specAggLocalDiskRWIOPS = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-MBps"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadWrite Storage Speed (MBps) : $dataRange"; $specAggDiskBurstSpeed = $dataRange
+    Write-Host "     - Temp ReadWrite Storage Speed (MBps) : $dataRange"; $specAggLocalDiskRWSpeed = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RO-IOPS"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadOnly Storage IOPS          : $dataRange"; $specAggTempSize = $dataRange
+    Write-Host "     - Temp ReadOnly Storage IOPS          : $dataRange"; $specAggLocalDiskROIOPS = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RO-MBps"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadOnly Storage Speed (MBps)  : $dataRange"; $specAggTempIOPS = $dataRange
+    Write-Host "     - Temp ReadOnly Storage Speed (MBps)  : $dataRange"; $specAggLocalDiskROSpeed = $dataRange
 } else {
     Write-Host "  Local Storage:" -ForegroundColor DarkGray
     Write-Host "    No local storage present in this series."
@@ -2094,17 +2226,17 @@ if ($localStoragePresent -eq $true) {
 #Storage Remote
 Write-Host "  Remote Storage:" -ForegroundColor DarkGray
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Count"; CsvFirstandLastImport
-Write-Host "     - Max Remote Storage (Qty.)                   : $dataRange"; $specAggDiskCount = $dataRange
+Write-Host "     - Max Remote Storage (Qty.)                   : $dataRange"; $specAggRemoteDiskCount = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Storage IOPS                       : $dataRange"; $specAggDataDiskIOPS = $dataRange
+Write-Host "     - Uncached Storage IOPS                       : $dataRange"; $specAggRemoteDiskIOPS = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-MBps"; CsvFirstandLastImport
-Write-Host "     - Uncached Storage Speed (MBps)               : $dataRange"; $specAggDiskSpeed = $dataRange
+Write-Host "     - Uncached Storage Speed (MBps)               : $dataRange"; $specAggRemoteDiskSpeed = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Storage Burst IOPS                 : $dataRange"; $specAggDiskBurstSpeed = $dataRange
+Write-Host "     - Uncached Storage Burst IOPS                 : $dataRange"; $specAggRemoteDiskBurstSpeed = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-MBps"; CsvFirstandLastImport
-Write-Host "     - Uncached Storage Burst Speed (MBps)         : $dataRange"; $specAggTempSize = $dataRange
+Write-Host "     - Uncached Storage Burst Speed (MBps)         : $dataRange"; $specAggRemoteDiskSize = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Special Storage IOPS               : $dataRange"; $specAggTempIOPS = $dataRange
+Write-Host "     - Uncached Special Storage IOPS               : $dataRange"; $specAggRemoteDiskIOPS = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-MBps"; CsvFirstandLastImport
 Write-Host "     - Uncached Special Storage Speed (MBps)       : $dataRange"
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-Burst-IOPS"; CsvFirstandLastImport
@@ -2248,7 +2380,7 @@ $storageLocalResAndDefs = "#### Storage resources
 - To learn how to get the best storage performance for your VMs, see [Virtual machine and disk performance](../../../virtual-machines/disks-performance.md)."
 
 $seriesInPreviewMessage = "> [!NOTE]
-> Azure Virtual Machine Series Dsv6 and Ddsv6 are currently in **Preview**. See the [Preview Terms Of Use | Microsoft Azure](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) for legal terms that apply to Azure features that are in beta, preview, or otherwise not yet released into general availability.
+> Azure Virtual Machine Series $seriesBaseName are currently in **Preview**. See the [Preview Terms Of Use | Microsoft Azure](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) for legal terms that apply to Azure features that are in beta, preview, or otherwise not yet released into general availability.
 "
 
 # ACTUALLY CREATE ENABLED FILES
@@ -2260,6 +2392,10 @@ if ($doCreateArticle -eq $true) {
     # Replace values in the template
     $articleContent = $articleContent -replace "SERIESNAMEUC", $seriesBaseName
     $articleContent = $articleContent -replace "SERIESNAMELC", $seriesBaseNameLower
+    $articleContent = $articleContent -replace "TODAYDATE", $todayDate
+    $articleContent = $articleContent -replace "GITHUBALIAS", $githubAlias
+    $articleContent = $articleContent -replace "MSFTALIAS", $msftAlias
+    $articleContent = $articleContent -replace "LISTFEATURESUPPORT", $featureSupportList
     if ($seriesInPreview -eq $true) { $articleContent = $articleContent -replace "SERIESPREVIEWMSG", $seriesInPreviewMessage } else { $articleContent = $articleContent -replace "SERIESPREVIEWMSG", "" }
     ### Table: CPU Memory
     $global:csvData = Import-Csv -Path "$INPUTDirectory\INPUT-cpu-memory-specs_${seriesBaseNameLower}-series.csv"
@@ -2338,8 +2474,11 @@ if ($doCreateSummary -eq $true) {
     Write-Host "`nCreating size summary include: ${seriesBaseNameLower}-series-summary.md"
     # Create the summary file
     $summaryContent = Get-Content -Path "$templateDirectory\temp-summary.md" -Raw
-    $summaryContent = $summaryContent -replace "SERIESNAME", $seriesBaseName
+    $summaryContent = $summaryContent -replace "SERIESNAMEUC", $seriesBaseName
     $summaryContent = $summaryContent -replace "SUMMARYTEXTINPUT", $summaryNewContent
+    $summaryContent = $summaryContent -replace "TODAYDATE", $todayDate
+    $summaryContent = $summaryContent -replace "GITHUBALIAS", $githubAlias
+    $summaryContent = $summaryContent -replace "MSFTALIAS", $msftAlias
     $summaryContent | Set-Content -Path $seriesSummaryOutputPath
 }
 if ($doCreateSpecs -eq $true) {
@@ -2349,19 +2488,25 @@ if ($doCreateSpecs -eq $true) {
     # Replace values in the template
     $specsContent = $specsContent -replace "SERIESNAMEUC", $seriesBaseName
     $specsContent = $specsContent -replace "SERIESNAMELC", $seriesBaseNameLower
+    $specsContent = $specsContent -replace "TODAYDATE", $todayDate
+    $specsContent = $specsContent -replace "GITHUBALIAS", $githubAlias
+    $specsContent = $specsContent -replace "MSFTALIAS", $msftAlias
     ### Table: Processor
     $specsContent = $specsContent -replace "PROCESSORSKU", $processorSKU
     $specsContent = $specsContent -replace "VCORESQTY", "$specAggCPUCores"
     ### Table: Memory
     $specsContent = $specsContent -replace "MEMORYGB", "$specAggMemory"
     if ($hwHasPartMEM -eq $true) {
-        $specsContent = $specsContent -replace "MEMORYDATA", "$specAggMemorySpeed"
-    } else {
-        $specsContent = $specsContent -replace "MEMORYDATA", ""
-    }
-    ### Table: Data Disks
-    $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggDiskCount"
-    $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggDataDiskIOPS"
+        $specsContent = $specsContent -replace "MEMORYDATA", "$specAggMemorySpeed" } else { $specsContent = $specsContent -replace "MEMORYDATA", "" }
+    ### Table: Local Storage
+    $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount"
+    $specsContent = $specsContent -replace "TEMPDISKSIZE", "$specAggLocalDiskSize"
+    $specsContent = $specsContent -replace "TEMPDISKIOPS", "$specAggLocalDiskRWIOPS"
+    $specsContent = $specsContent -replace "TEMPDISKSPEED", "$specAggLocalDiskRWSpeed"
+    ### Table: Remote Storage
+    $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggRemoteDiskCount"
+    $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggRemoteDiskIOPS"
+    $specsContent = $specsContent -replace "DATADISKSPEED", "$specAggRemoteDiskSpeed"
     ### Table: Network
     $specsContent = $specsContent -replace "NICSQTY", "$specAggNetNicCount"
     $specsContent = $specsContent -replace "NETBANDWIDTH", "$specAggNetBandwidth"
@@ -2372,7 +2517,7 @@ if ($doCreateSpecs -eq $true) {
         $specsContent = $specsContent -replace "ACCELVMDATA", "<br> ACCELVMMEMMIN - ACCELVMMEMMAX<sup>GiB</sup> per VM"
     } else {
         $specsContent = $specsContent -replace "ACCELDATA", ""
-        $specsContent = $specsContent -replace "ACCELQTY", ""
+        $specsContent = $specsContent -replace "ACCELQTY", "None"
     }
     ## Output new file to the OUTPUT directory
     $specsContent | Set-Content -Path $seriesSpecsOutputPath
@@ -2398,6 +2543,7 @@ if ($batchMode -eq $true) {
         Move-Item -Path $file.FullName -Destination $batchDirectory -Force
         $fileCount++
     }
+    Get-ChildItem -Path "$batchDirectory" -Filter ".temp" -Recurse | Remove-Item -Force
     Write-Host "`n$fileCount files moved from OUTPUT to BATCH directory" -ForegroundColor Green
 
     Write-Host "`nWould you like to run the script again and $scriptOperation another series for the batch operation?`n" -ForegroundColor Yellow
