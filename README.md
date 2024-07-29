@@ -1,12 +1,13 @@
 # Microsoft Learn Sizes Script
 A script to create, modify, or retire Azure virtual machine sizes using the new "sizes restructure project" format
 
-Current latest version: Beta 1.4.1
+Current latest version: Beta 1.5
 
 ## Current features
 - Create new size series
   - Size Series file
     - Tabs for hardware components on a per-size basis
+    - Dedicated 'Supported features' section
   - Summary include file
   - Specs include file
     - Lists previously hidden specs such as CPU architecture, memory bandwidth, etc.

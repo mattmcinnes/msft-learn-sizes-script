@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.4.1"
+$scriptVersion = "Beta 1.5"
 
 ## Test mode
 $testMode = $false
@@ -29,7 +29,7 @@ $outputDirectory = "$originalDirectory\OUTPUT"
 $batchDirectory = "$originalDirectory\BATCH"
 
 ## Today's Date
-$todayDate = Get-Date -Format "MM-dd-yyyy"
+$todayDate = Get-Date -Format "MM/dd/yyyy"
 
 ## Function to delay and show dots
 function DelayDots {
@@ -143,7 +143,6 @@ if ($scriptOperation -eq "cleanup") {
 Clear-Host
 $showMessage = $false
 $invalidInput = $false
-$batchMode = $false
 $validContinue = $false
 $validSelect = $null
 $readOnlyMode = $false
@@ -216,83 +215,85 @@ while ($true) {
 $validInput = $true
 $showMessage = $false
 $validContinue = $false
-while ($true) {
-    Clear-Host
-    Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - MS Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-    Write-Host "What is your Microsoft Alias (for ms.author).`n"
-    Write-Host "NOTE: You will enter your GitHub alias in the next step." -ForegroundColor DarkYellow
-    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
-    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
-    if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your Microsoft alias`n"
-    } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
-    if ($userResponse -ne "") {
-        $validInput = $true
-        $validContinue = $true
-        $showMessage = $true
-        $msftAlias = $userResponse
-        $messageText = "Hello $msftAlias!"
-    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
-        break
-    } elseif ($testMode -eq $true) {
-        $validInput = $true
-        $showMessage = $false
-        Write-Host "Test mode is enabled. Setting defaults..."
-        Read-Host "`nPress Enter to continue`n"
-        break
-    } else { 
-        $validInput = $false
-        $showMessage = $false
-        $errorMessage = "Invalid input. Please enter your alias."
+if ($msftAlias -eq $null) {
+    while ($true) {
+        Clear-Host
+        Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - MS Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+        Write-Host "What is your Microsoft Alias (for ms.author).`n"
+        Write-Host "NOTE: You will enter your GitHub alias in the next step." -ForegroundColor DarkYellow
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+        if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your Microsoft alias`n"
+        } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
+        if ($userResponse -ne "") {
+            $validInput = $true
+            $validContinue = $true
+            $showMessage = $true
+            $msftAlias = $userResponse
+            $messageText = "Hello $msftAlias!"
+        } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
+            break
+        } elseif ($testMode -eq $true) {
+            $validInput = $true
+            $showMessage = $false
+            Write-Host "Test mode is enabled. Setting defaults..."
+            Read-Host "`nPress Enter to continue`n"
+            break
+        } else { 
+            $validInput = $false
+            $showMessage = $false
+            $errorMessage = "Invalid input. Please enter your alias."
+        }
     }
 }
-
 ## GitHub Alias
 $validInput = $true
 $showMessage = $false
 $validContinue = $false
-while ($true) {
-    Clear-Host
-    Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - GitHub Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-    Write-Host "What is your GitHub Alias (for author and topic notifications)`n"
-    Write-Host "NOTE: If your GitHub alias is the same as your Microsoft alias, entering 's' will reuse the previous value." -ForegroundColor DarkYellow
-    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
-    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
-    if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your GitHub alias`n"
-    } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
-    if ($userResponse -ne "" -and $userResponse -ne "s") {
-        $validInput = $true
-        $validContinue = $true
-        $showMessage = $true
-        $gitAlias = $userResponse
-        $messageText = "Hello $gitAlias!"
-    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
-        break
-    } elseif ($userResponse -eq "s") {
-        $validInput = $true
-        $showMessage = $true
-        $validContinue = $true
-        $gitAlias = $msftAlias
-        $messageText = "Hello again, $gitAlias!"
-    } elseif ($testMode -eq $true) {
-        $validInput = $true
-        $showMessage = $false
-        Write-Host "Test mode is enabled. Setting defaults..."
-        Read-Host "`nPress Enter to continue`n"
-        break
-    } else { 
-        $validInput = $false
-        $showMessage = $false
-        $errorMessage = "Invalid input. Please enter your alias."
+if ($gitAlias -eq $null) {
+    while ($true) {
+        Clear-Host
+        Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - GitHub Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+        Write-Host "What is your GitHub Alias (for author and topic notifications)`n"
+        Write-Host "NOTE: If your GitHub alias is the same as your Microsoft alias, entering 's' will reuse the previous value." -ForegroundColor DarkYellow
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+        if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your GitHub alias`n"
+        } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
+        if ($userResponse -ne "" -and $userResponse -ne "s") {
+            $validInput = $true
+            $validContinue = $true
+            $showMessage = $true
+            $gitAlias = $userResponse
+            $messageText = "Hello $gitAlias!"
+        } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
+            break
+        } elseif ($userResponse -eq "s") {
+            $validInput = $true
+            $showMessage = $true
+            $validContinue = $true
+            $gitAlias = $msftAlias
+            $messageText = "Hello again, $gitAlias!"
+        } elseif ($testMode -eq $true) {
+            $validInput = $true
+            $showMessage = $false
+            Write-Host "Test mode is enabled. Setting defaults..."
+            Read-Host "`nPress Enter to continue`n"
+            break
+        } else { 
+            $validInput = $false
+            $showMessage = $false
+            $errorMessage = "Invalid input. Please enter your alias."
+        }
     }
 }
 
 
-
 # DATA WARNING AND RESET
 Clear-Host 
-if ($batchMode -eq $false) {
+if ($batchMode -ne $true) {
     Write-Host "DATA RESET" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "WARNING:"`
     "ALL FILES IN THE SCRIPT 'OUTPUT' and 'INPUT' DIRECTORY WILL BE REMOVED!"`
@@ -706,6 +707,11 @@ if ($scriptOperation -eq "create") {
     $hardwareCSVTemplatePath = "${templateDirectory}\temp-hardware.csv"
     Copy-Item -Path "$templateDirectory\temp-hardware.csv" -Destination "${hardwareCSVTempPath}"
 
+    ## Copy feature csv file and create new and template path variable
+    $featureListCSVTempPath = "${originalDirectory}\temp\${seriesNameLower}-feature-list.csv"
+    $featureListCSVTemplatePath = "${templateDirectory}\temp-feature-list.csv"
+    Copy-Item -Path "$templateDirectory\temp-feature-list.csv" -Destination "${featureListCSVTempPath}"
+
     ## Copy Sizes Names List CSV file
     $sizesNamesListINPUTPath = "$inputDirectory\INPUT-sizes-name-list_${seriesNameLower}.csv"
     $sizesNamesListINPUTLocalPath = ".\INPUT\INPUT-sizes-name-list_${seriesNameLower}.csv"
@@ -740,6 +746,7 @@ if ($scriptOperation -eq "create") {
 
 
     # Part in Series?
+    $hwHasPartTMPDSK = $false; if ($testMode -eq $true) { $hwHasPartTMPDSK = $true }
     $hwHasPartMEM = $false; if ($testMode -eq $true) { $hwHasPartMEM = $true }
     $hwHasPartNIC = $false; if ($testMode -eq $true) { $hwHasPartNIC = $true }
     $hwHasPartGPU = $false; if ($testMode -eq $true) { $hwHasPartGPU = $true }
@@ -834,6 +841,92 @@ if ($scriptOperation -eq "create") {
             }
         }
     }
+
+
+
+
+
+    # DEFINE FEATURES
+    $validInput = $true
+    $retryCount = 0
+    $showMessage = $false
+    $csvData = Import-Csv -Path $featureListCSVTempPath
+    while ($true) {
+        Clear-Host
+        Write-Host "FEATURE SUPPORT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+        Write-Host "What features are supported for VMs running on the series?`n"
+        Write-Host "NOTE: Make sure none of the features are conflicting (i.e. 'Special Storage' isn't supported while 'Special Storage caching' is supported)`n" -ForegroundColor DarkYellow
+        Write-Host "  Feature support status:" -ForegroundColor DarkGray
+        $counter = 1
+        foreach ($row in $csvData) {
+            Write-Host "    $counter. $($row.'Feature-Name')" -NoNewline
+            if ($($row.'Support-Level') -eq 'Supported') { Write-Host " [Supported]" -ForegroundColor Green } else { Write-Host " [Not Supported]" -ForegroundColor Red }
+            $counter++
+        }
+        Write-Host "    $counter. New Feature"
+        $maxValidReadEntries = $counter - 1
+        
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+        $userResponse = Read-Host "Change the supported status of specific custom component by entering the corresponding number from the list above. `nEnter 'done' to continue with the selected feature support values`n"
+
+        ### Actual Input
+        if ($userResponse -eq "" -and $retryCount -eq 0) {
+            $validInput = $false
+            $showMessage = $false
+            $errorMessage = "It isn't possible for all features to be not supported. Please enable features which are supported."
+        } elseif ($userResponse -eq "done" -and $retryCount -gt 0 -and $validInput -eq $true) {
+            break
+        } elseif ($userResponse -eq "$counter") {
+            $validInput = $false
+            $showMessage = $false
+            $errorMessage = "Please contact the content dev team to add a new feature."
+        } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
+            $selectedFeature = $csvData[$userResponse - 1].'Feature-Name'
+            if ($csvData[$userResponse - 1].'Support-Level' -eq 'Supported') {
+                $csvData[$userResponse - 1].'Support-Level' = 'Not Supported'
+            } else {
+                $csvData[$userResponse - 1].'Support-Level' = 'Supported'
+            }
+            $selectedFeatureStatus = $csvData[$userResponse - 1].'Support-Level'
+            $validInput = $true
+            $showMessage = $true
+            $messageText = "$selectedFeature is now $selectedFeatureStatus"
+            $retryCount++
+        } else {
+            if ($testMode -eq $true) {
+                $validInput = $true
+                $showMessage = $false
+                Write-Host = "Test mode is enabled. Setting defaults..."
+                Read-Host "`nPress Enter to continue`n"
+                break
+            } else { 
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Invalid input. Please enter a number from 1 to $counter."
+            }
+        }
+    }
+
+    # Write the updated CSV data back to the file
+    $csvData | Export-Csv -Path $featureListCSVTempPath -NoTypeInformation
+
+    # Update featureSupportList with links to said features
+    $featureSupportList = $null
+    $counter = 1
+    foreach ($row in $csvData) {
+        if ($row.'Support-Data' -eq '') {
+            $featureSupportList = "${featureSupportList}[$($row.'Feature-Name')]($($row.'Feature-ref-link')): $($row.'Support-Level') <br>"
+        } else { 
+            $featureSupportList = "${featureSupportList}[$($row.'Feature-Name')]($($row.'Feature-ref-link')): $($row.'Support-Level') ($($row.'Support-Data')) <br>" }
+        $counter++
+    }
+
+
+
+
+
 
     # DEFINE THE PROCESSOR CPU INFO
     ## CPU COUNT
@@ -1115,9 +1208,9 @@ if ($scriptOperation -eq "create") {
                 $errorMessage = "Please enter a CPU model."
             } elseif ($userResponse -eq "" -and $retryCount -gt 0 -and $validInput -eq $true) {
                 break
-            } elseif ($userResponse -match "${hwBrand}" -or $userResponse -match "${hwOem}") {
+            } elseif ($userResponse -match "${hwBrand}" -or $userResponse -match "${hwOem}" -or $userResponse.Contains("GHz")) {
                 $validInput = $false
-                $errorMessage = "Do not enter the CPU oem or brand. Just enter the specific CPU model name."
+                $errorMessage = "Do not enter the CPU's OEM, brand, or clock speed (GHz). Just enter the specific CPU model name."
             } else {
                 if ($testMode -eq $true) {
                     Write-Host "Script is in Test mode. Setting defaults..." -ForegroundColor Green 
@@ -2171,10 +2264,10 @@ function CsvFirstandLastImport {
     $csvData = Import-Csv -Path $global:csvPath
     # Check if the CSV data is not empty
     if ($csvData.Count -gt 0) {
-        # Store the first row value of the vCPUs column
+        # Store the first row value of the column
         $global:firstRowData = $csvData[0].$global:csvColumn
 
-        # Store the last row value of the vCPUs column
+        # Store the last row value of the column
         $global:lastRowData = $csvData[$csvData.Count - 1].$global:csvColumn
 
         # If the first and last row values are the same, only display one of them. If they're both empty, display "N/A", otherwise display the range with a ' - ' separator.
@@ -2182,6 +2275,29 @@ function CsvFirstandLastImport {
             $global:dataRange = "$global:firstRowData"
         } elseif ($global:firstRowData -ne $global:lastRowData) {
             $global:dataRange = "$global:firstRowData - $global:lastRowData"
+        } else {
+           $global:dataRange = "N/A"
+        }
+    }
+}
+
+function CsvFirstandLastImportBurst {
+    $csvData = Import-Csv -Path $global:csvPath
+    # Check if the CSV data is not empty
+    if ($csvData.Count -gt 0) {
+        # Store the first row value of the column
+        $global:firstRowData = $csvData[0].$global:csvColumn
+
+        # Store the last row value of the burst equivalent column
+        $csvData = Import-Csv -Path $global:csvBurstPath
+        $global:burstLastRowData = $csvData[$csvData.Count - 1].$global:csvColumn
+
+        # If the first and last row values are the same, only display one of them. If they're both empty, display "N/A", otherwise display the range with a ' - ' separator.
+        if ($global:firstRowData -eq $global:lastRowData) {
+            $global:dataRange = "$global:firstRowData"
+        } elseif ($global:firstRowData -ne $global:lastRowData) {
+            $global:dataRange = "$global:firstRowData -"
+            $global:dataRange = "${global:DataRange} ${global:burstLastRowData}"
         } else {
            $global:dataRange = "N/A"
         }
@@ -2236,7 +2352,7 @@ Write-Host "     - Uncached Storage Burst IOPS                 : $dataRange"; $s
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-MBps"; CsvFirstandLastImport
 Write-Host "     - Uncached Storage Burst Speed (MBps)         : $dataRange"; $specAggRemoteDiskSize = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Special Storage IOPS               : $dataRange"; $specAggRemoteDiskIOPS = $dataRange
+Write-Host "     - Uncached Special Storage IOPS               : $dataRange"
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-MBps"; CsvFirstandLastImport
 Write-Host "     - Uncached Special Storage Speed (MBps)       : $dataRange"
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-Burst-IOPS"; CsvFirstandLastImport
@@ -2266,7 +2382,8 @@ Read-Host "`nIf there's an issue in any of this content, go back and edit the fi
 Clear-Host
 
 
-
+# ARCHIVE DATA
+Move-Item -Path $featureListCSVTempPath -Destination $archiveDirectory -Force
 
 # CREATE THE FINAL FILES
 Clear-Host
@@ -2361,7 +2478,7 @@ function TableCSVconvertMD {
 ## DEFINE SOME INFO
 
 $noLocalStorageMessage = "> [!NOTE]
-> No local storage present in this series. For similar sizes with local storage, see the [Dpdsv6-series](./dpdsv6-series.md).
+> No local storage present in this series.
 >
 > For frequently asked questions, see [Azure VM sizes with no local temp disk](../../azure-vms-no-temp-disk.yml)."
 
@@ -2393,7 +2510,7 @@ if ($doCreateArticle -eq $true) {
     $articleContent = $articleContent -replace "SERIESNAMEUC", $seriesBaseName
     $articleContent = $articleContent -replace "SERIESNAMELC", $seriesBaseNameLower
     $articleContent = $articleContent -replace "TODAYDATE", $todayDate
-    $articleContent = $articleContent -replace "GITHUBALIAS", $githubAlias
+    $articleContent = $articleContent -replace "GITHUBALIAS", $gitAlias
     $articleContent = $articleContent -replace "MSFTALIAS", $msftAlias
     $articleContent = $articleContent -replace "LISTFEATURESUPPORT", $featureSupportList
     if ($seriesInPreview -eq $true) { $articleContent = $articleContent -replace "SERIESPREVIEWMSG", $seriesInPreviewMessage } else { $articleContent = $articleContent -replace "SERIESPREVIEWMSG", "" }
@@ -2477,7 +2594,7 @@ if ($doCreateSummary -eq $true) {
     $summaryContent = $summaryContent -replace "SERIESNAMEUC", $seriesBaseName
     $summaryContent = $summaryContent -replace "SUMMARYTEXTINPUT", $summaryNewContent
     $summaryContent = $summaryContent -replace "TODAYDATE", $todayDate
-    $summaryContent = $summaryContent -replace "GITHUBALIAS", $githubAlias
+    $summaryContent = $summaryContent -replace "GITHUBALIAS", $gitAlias
     $summaryContent = $summaryContent -replace "MSFTALIAS", $msftAlias
     $summaryContent | Set-Content -Path $seriesSummaryOutputPath
 }
@@ -2489,7 +2606,7 @@ if ($doCreateSpecs -eq $true) {
     $specsContent = $specsContent -replace "SERIESNAMEUC", $seriesBaseName
     $specsContent = $specsContent -replace "SERIESNAMELC", $seriesBaseNameLower
     $specsContent = $specsContent -replace "TODAYDATE", $todayDate
-    $specsContent = $specsContent -replace "GITHUBALIAS", $githubAlias
+    $specsContent = $specsContent -replace "GITHUBALIAS", $gitAlias
     $specsContent = $specsContent -replace "MSFTALIAS", $msftAlias
     ### Table: Processor
     $specsContent = $specsContent -replace "PROCESSORSKU", $processorSKU
@@ -2499,10 +2616,18 @@ if ($doCreateSpecs -eq $true) {
     if ($hwHasPartMEM -eq $true) {
         $specsContent = $specsContent -replace "MEMORYDATA", "$specAggMemorySpeed" } else { $specsContent = $specsContent -replace "MEMORYDATA", "" }
     ### Table: Local Storage
-    $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount"
-    $specsContent = $specsContent -replace "TEMPDISKSIZE", "$specAggLocalDiskSize"
-    $specsContent = $specsContent -replace "TEMPDISKIOPS", "$specAggLocalDiskRWIOPS"
-    $specsContent = $specsContent -replace "TEMPDISKSPEED", "$specAggLocalDiskRWSpeed"
+    if ($hwHasPartTMPDSK -eq $true) {
+        $specsContent = $specsContent -replace "TEMPDISKDATA", "TEMPDISKSIZE GiB <br>TEMPDISKIOPS IOPS (RR) <br>TEMPDISKSPEED MBps (RR)"
+        $specsContent = $specsContent -replace "TEMPDISKSIZE", "$specAggLocalDiskSize"
+        $specsContent = $specsContent -replace "TEMPDISKIOPS", "$specAggLocalDiskRRIOPS"
+        $specsContent = $specsContent -replace "TEMPDISKSPEED", "$specAggLocalDiskRRSpeed"
+        if ($specAggLocalDiskCount -eq 1) {
+            $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disk"
+        } else { $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disks" }
+    } else {
+        $specsContent = $specsContent -replace "TEMPDISKQTY", "None"
+        $specsContent = $specsContent -replace "TEMPDISKDATA", ""
+    }
     ### Table: Remote Storage
     $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggRemoteDiskCount"
     $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggRemoteDiskIOPS"
