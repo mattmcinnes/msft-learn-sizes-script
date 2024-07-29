@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.4"
+$scriptVersion = "Beta 1.4.1"
 
 ## Test mode
 $testMode = $false
@@ -2211,14 +2211,14 @@ if ($localStoragePresent -eq $true) {
     Write-Host "     - Max Temp Storage (Qty.)             : $dataRange"; $specAggLocalDiskCount = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-Size-GB"; CsvFirstandLastImport
     Write-Host "     - Temp Storage Size (GiB)             : $dataRange"; $specAggLocalDiskSize = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RR-IOPS"; CsvFirstandLastImport
+    Write-Host "     - Temp Random Read Storage IOPS          : $dataRange"; $specAggLocalDiskRRIOPS = $dataRange
+    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RR-MBps"; CsvFirstandLastImport
+    Write-Host "     - Temp Random Read Storage Speed (MBps)  : $dataRange"; $specAggLocalDiskRRSpeed = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-IOPS"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadWrite Storage IOPS         : $dataRange"; $specAggLocalDiskRWIOPS = $dataRange
+    Write-Host "     - Temp Random Write Storage IOPS         : $dataRange"; $specAggLocalDiskRWIOPS = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-MBps"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadWrite Storage Speed (MBps) : $dataRange"; $specAggLocalDiskRWSpeed = $dataRange
-    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RO-IOPS"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadOnly Storage IOPS          : $dataRange"; $specAggLocalDiskROIOPS = $dataRange
-    $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RO-MBps"; CsvFirstandLastImport
-    Write-Host "     - Temp ReadOnly Storage Speed (MBps)  : $dataRange"; $specAggLocalDiskROSpeed = $dataRange
+    Write-Host "     - Temp Random Write Storage Speed (MBps) : $dataRange"; $specAggLocalDiskRWSpeed = $dataRange
 } else {
     Write-Host "  Local Storage:" -ForegroundColor DarkGray
     Write-Host "    No local storage present in this series."
@@ -2374,9 +2374,9 @@ $storageLocalResAndDefs = "#### Storage resources
 - [Share an Azure managed disk](../../../virtual-machines/disks-shared.md)
 
 #### Table definitions
+- <sup>1</sup>Temp disk speed often differs between RR (Random Read) and RW (Random Write) operations. RR operations are typically faster than RW operations. The RW speed is usually slower than the RR speed on series where only the RR speed value is listed.
 - Storage capacity is shown in units of GiB or 1024^3 bytes. When you compare disks measured in GB (1000^3 bytes) to disks measured in GiB (1024^3) remember that capacity numbers given in GiB may appear smaller. For example, 1023 GiB = 1098.4 GB.
 - Disk throughput is measured in input/output operations per second (IOPS) and MBps where MBps = 10^6 bytes/sec.
-- Data disks can operate in cached or uncached modes. For cached data disk operation, the host cache mode is set to ReadOnly (R-O) or ReadWrite (R-W). For uncached data disk operation, the host cache mode is set to None.
 - To learn how to get the best storage performance for your VMs, see [Virtual machine and disk performance](../../../virtual-machines/disks-performance.md)."
 
 $seriesInPreviewMessage = "> [!NOTE]
@@ -2444,23 +2444,23 @@ if ($doCreateArticle -eq $true) {
     $articleContent = $articleContent -replace "Bandwidth-Mbps", "Max Bandwidth (Mbps)"
 
     #### STORAGE LOCAL (Disk Info)
-    $articleContent = $articleContent -replace "Local-Disk-Count", "Max Temp Storage (Qty.)"
-    $articleContent = $articleContent -replace "Local-Disk-Size-GB", "Temp Storage Size (GiB)"
-    $articleContent = $articleContent -replace "Local-Disk-RW-IOPS", "Temp ReadWrite Storage IOPS"
-    $articleContent = $articleContent -replace "Local-Disk-RW-MBps", "Temp ReadWrite Storage Speed (MBps)"
-    $articleContent = $articleContent -replace "Local-Disk-RO-IOPS", "Temp ReadOnly Storage IOPS"
-    $articleContent = $articleContent -replace "Local-Disk-RO-MBps", "Temp ReadOnly Storage Speed (MBps)"
+    $articleContent = $articleContent -replace "Local-Disk-Count", "Max Temp Storage Disks (Qty.)"
+    $articleContent = $articleContent -replace "Local-Disk-Size-GB", "Temp Disk Size (GiB)"
+    $articleContent = $articleContent -replace "Local-Disk-RW-IOPS", "Temp Disk Random Write (RW)<sup>1</sup> IOPS"
+    $articleContent = $articleContent -replace "Local-Disk-RW-MBps", "Temp Disk Random Write (RW)<sup>1</sup> Speed (MBps)"
+    $articleContent = $articleContent -replace "Local-Disk-RR-IOPS", "Temp Disk Random Read (RR)<sup>1</sup> IOPS"
+    $articleContent = $articleContent -replace "Local-Disk-RR-MBps", "Temp Disk Random Read (RR)<sup>1</sup> Speed (MBps)"
 
     #### STORAGE REMOTE (Disk Info)
-    $articleContent = $articleContent -replace "Remote-Disk-Count", "Max Remote Storage (Qty.)"
-    $articleContent = $articleContent -replace "Remote-Disk-IOPS", "Uncached Storage IOPS"
-    $articleContent = $articleContent -replace "Remote-Disk-MBps", "Uncached Storage Speed (MBps)"
-    $articleContent = $articleContent -replace "Remote-Disk-Burst-IOPS", "Uncached Storage Burst<sup>1</sup> IOPS"
-    $articleContent = $articleContent -replace "Remote-Disk-Burst-MBps", "Uncached Storage Burst<sup>1</sup> Speed (MBps)"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-IOPS", "Uncached Special<sup>2</sup> Storage IOPS"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-MBps", "Uncached Special<sup>2</sup> Storage Speed (MBps)"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-IOPS", "Uncached Burst<sup>1</sup> Special2 Storage IOPS"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-MBps", "Uncached Burst<sup>1</sup> Special Storage Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Disk-Count", "Max Remote Storage Disks (Qty.)"
+    $articleContent = $articleContent -replace "Remote-Disk-IOPS", "Uncached Disk IOPS"
+    $articleContent = $articleContent -replace "Remote-Disk-MBps", "Uncached Disk Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Disk-Burst-IOPS", "Uncached Disk Burst<sup>1</sup> IOPS"
+    $articleContent = $articleContent -replace "Remote-Disk-Burst-MBps", "Uncached Disk Burst<sup>1</sup> Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-IOPS", "Uncached Special<sup>2</sup> Disk IOPS"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-MBps", "Uncached Special<sup>2</sup> Disk Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-IOPS", "Uncached Burst<sup>1</sup> Special<sup>2</sup> Disk IOPS"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-MBps", "Uncached Burst<sup>1</sup> Special<sup>2</sup> Disk Speed (MBps)"
 
     
     #### ACCELERATORS (GPU Info)
