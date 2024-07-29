@@ -1,0 +1,10 @@
+Feature-Name,Support-Level,Support-Data,Feature-ref-link
+Premium Storage,Not Supported,,../../premium-storage-performance.md
+Premium Storage caching,Not Supported,,../../premium-storage-performance.md
+Live Migration,Not Supported,,../../maintenance-and-updates.md
+Memory Preserving Updates,Not Supported,,../../maintenance-and-updates.md
+Generation 2 VMs,Not Supported,,../../generation-2.md
+Generation 1 VMs,Not Supported,,../../generation-2.md
+Accelerated Networking,Not Supported,,../../../virtual-network/create-vm-accelerated-networking-cli.md
+Ephemeral OS Disk,Not Supported,,../../ephemeral-os-disks.md
+Nested Virtualization,Not Supported,,/virtualization/hyper-v-on-windows/user-guide/nested-virtualization
