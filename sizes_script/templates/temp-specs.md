@@ -3,7 +3,7 @@ title: SERIESNAMEUC series specs include
 description: Include file containing specifications of SERIESNAMEUC-series VM sizes.
 author: GITHUBALIAS
 ms.topic: include
-ms.service: virtual-machines
+ms.service: azure-virtual-machines
 ms.subservice: sizes
 ms.date: TODAYDATE
 ms.author: MSFTALIAS

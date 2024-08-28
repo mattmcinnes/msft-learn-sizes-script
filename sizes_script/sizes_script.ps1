@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.5"
+$scriptVersion = "Beta 1.6.1"
 
 ## Test mode
 $testMode = $false
@@ -12,8 +12,8 @@ $demoMode = $false
 ## Script mode
 $scriptModeTitle = ""
 
-## Repo name (change after the great divide)
-$repoName = "azure-docs-pr"
+## Repo name
+$repoName = "azure-compute-docs-pr"
 
 ## Default azure-docs-pr path (adjust this path as necessary)
 $defaultGitDir = "C:\Users\$env:USERNAME\GitHub\$repoName"
@@ -2637,9 +2637,11 @@ if ($doCreateSpecs -eq $true) {
     $specsContent = $specsContent -replace "NETBANDWIDTH", "$specAggNetBandwidth"
     ### Table: Accelerators
     if ($acceleratorPresent -eq $true) {
-        $specsContent = $specsContent -replace "ACCELDATA", "ACCELSKU ACCELMEM ACCELVMDATA"
-        $specsContent = $specsContent -replace "ACCELSKU", "ACCELSKU ACCELMEM ACCELVMDATA"
-        $specsContent = $specsContent -replace "ACCELVMDATA", "<br> ACCELVMMEMMIN - ACCELVMMEMMAX<sup>GiB</sup> per VM"
+        ## Create template word values
+        $specsContent = $specsContent -replace "ACCELDATA", "ACCELSKU ACCELMEM"
+        ## Replace values in the template
+        $specsContent = $specsContent -replace "ACCELQTY", "$specAggAccelCount"
+        $specsContent = $specsContent -replace "ACCELSKU", "$acceleratorSKU"
     } else {
         $specsContent = $specsContent -replace "ACCELDATA", ""
         $specsContent = $specsContent -replace "ACCELQTY", "None"

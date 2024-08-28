@@ -2,7 +2,7 @@
 title: SERIESNAMEUC size series
 description: Information on and specifications of the SERIESNAMEUC-series sizes
 author: GITHUBALIAS
-ms.service: virtual-machines
+ms.service: azure-virtual-machines
 ms.subservice: sizes
 ms.topic: conceptual
 ms.date: TODAYDATE
