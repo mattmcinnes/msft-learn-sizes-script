@@ -1,7 +1,7 @@
 # INITIAL VARIABLES:
 
 ## Script version:
-$scriptVersion = "Beta 1.6.1"
+. ./version.ps1
 
 ## Test mode
 $testMode = $false
@@ -2621,7 +2621,7 @@ if ($doCreateSpecs -eq $true) {
         $specsContent = $specsContent -replace "TEMPDISKSIZE", "$specAggLocalDiskSize"
         $specsContent = $specsContent -replace "TEMPDISKIOPS", "$specAggLocalDiskRRIOPS"
         $specsContent = $specsContent -replace "TEMPDISKSPEED", "$specAggLocalDiskRRSpeed"
-        if ($specAggLocalDiskCount -eq 1) {
+        if ($specAggLocalDiskCount -match "1") {
             $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disk"
         } else { $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disks" }
     } else {
@@ -2630,8 +2630,12 @@ if ($doCreateSpecs -eq $true) {
     }
     ### Table: Remote Storage
     $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggRemoteDiskCount"
-    $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggRemoteDiskIOPS"
-    $specsContent = $specsContent -replace "DATADISKSPEED", "$specAggRemoteDiskSpeed"
+    if ([string]::IsNullOrEmpty($specAggRemoteDiskIOPS) -or $specAggRemoteDiskIOPS -eq "N/A") {
+        $specsContent = $specsContent -replace "DATADISKDATA", ""
+    } else { $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggRemoteDiskIOPS IOPS" }
+    if ([string]::IsNullOrEmpty($specAggRemoteDiskSpeed) -or $specAggRemoteDiskSpeed -eq "N/A") {
+        $specsContent = $specsContent -replace "DATADISKDATA", ""
+    } else { $specsContent = $specsContent -replace "DATADISKSPEED", "$specAggRemoteDiskSpeed MBps" }
     ### Table: Network
     $specsContent = $specsContent -replace "NICSQTY", "$specAggNetNicCount"
     $specsContent = $specsContent -replace "NETBANDWIDTH", "$specAggNetBandwidth"
@@ -2706,10 +2710,11 @@ if ($testMode -eq $true) {
     Write-Host "`nDemo mode is enabled. The script will not stash, checkout, or pull from the main branch."
 } else {
     git stash push -m "Content auto-stashed by sizes script while ${scriptOpIng} the ${seriesSelected}."
+    Set-Location -Path $gitDir
     git checkout main
+    git fetch
     git pull upstream main
     git push origin main
-    git fetch
 }
 
 ### Define the branch name and make sure there isn't already one with the same name. Dont do this if in testing mode
