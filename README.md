@@ -1,7 +1,7 @@
 # Microsoft Learn Sizes Script
 A script to create, modify, or retire Azure virtual machine sizes using the new "sizes restructure project" format
 
-Current latest version: Beta 1.6.1
+Current latest version: Beta 1.7
 
 ## Current features
 - Create new size series
@@ -31,6 +31,7 @@ Current latest version: Beta 1.6.1
 - Clean-up mode to prevent clutter
 - Supports series with multiple CPU models
 - Microsoft and GitHub alias entry
+- Script remote update capability
 
 ## Planned features
 - Automatic TOC entry
