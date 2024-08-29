@@ -1,8 +1,5 @@
 # INITIAL VARIABLES:
 
-## Script version:
-. ./version.ps1
-
 ## Test mode
 $testMode = $false
 
@@ -19,14 +16,15 @@ $repoName = "azure-compute-docs-pr"
 $defaultGitDir = "C:\Users\$env:USERNAME\GitHub\$repoName"
 
 ## Important directories for the script
-$originalDirectory = Get-Location
+$rootDirectory = Get-Location
+$originalDirectory = "$rootDirectory\bin"
 $archiveDirectory = "$originalDirectory\archive"
 $tempDirectory = "$originalDirectory\temp"
 $templateDirectory = "$originalDirectory\templates"
-$inputDirectory = "$originalDirectory\INPUT"
+$inputDirectory = "$rootDirectory\INPUT"
 $examplesDirectory = "$originalDirectory\examples"
-$outputDirectory = "$originalDirectory\OUTPUT"
-$batchDirectory = "$originalDirectory\BATCH"
+$outputDirectory = "$rootDirectory\OUTPUT"
+$batchDirectory = "$rootDirectory\BATCH"
 
 ## Today's Date
 $todayDate = Get-Date -Format "MM/dd/yyyy"
@@ -45,14 +43,14 @@ function DelayDots {
 
 function TestMode {
     Write-Host "`nTesting mode is enabled. Selecting defaults`n"
-    $inputLetter = "a"
-    $inputNumber = "1"
+    $userResponse = "a"
+    $userResponse = "1"
     $seriesValid = $true
 }
 
 # PRE-RUN OPS AND CLEANUP
 ## Delete all data in the temp directory
-Get-ChildItem -Path $tempDirectory -Recurse | Remove-Item -Force
+Get-ChildItem -Path $tempDirectory -Recurse | Remove-Item -Force -Recurse
 ## Create an info file in the temp directory
 New-Item -Path $tempDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
 ## Create an info file in the INPUT directory
@@ -63,24 +61,6 @@ New-Item -Path $archiveDirectory -Name ".temp" -ItemType "file" -Force | Out-Nul
 New-Item -Path $batchDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
 
 
-# WELCOME MESSAGE
-$spaceCount = 17 - $scriptVersion.Length
-$spaces = " " * $spaceCount
-$scriptVersionExt = $scriptVersion  + $spaces
-function IntroBlock {
-Write-Host "+----------------------------------------------------------------------+" -ForegroundColor Yellow
-Write-Host "|" -NoNewline -ForegroundColor Yellow; Write-Host "               Welcome to the Azure Sizes docs script!                " -NoNewline; Write-Host "|" -ForegroundColor Yellow
-Write-Host "|" -NoNewline -ForegroundColor Yellow; Write-Host "   Written to help you easily create, update, or retire sizes docs.   " -NoNewline; Write-Host "|" -ForegroundColor Yellow
-Write-Host "|" -NoNewline -ForegroundColor Yellow; Write-Host "                                                                      " -NoNewline; Write-Host "|" -ForegroundColor Yellow
-Write-Host "|" -NoNewline -ForegroundColor Yellow; Write-Host "                   - Created by @mattmcinnes                          " -NoNewline -ForegroundColor DarkGray; Write-Host "|" -ForegroundColor Yellow
-Write-Host "|" -NoNewline -ForegroundColor Yellow; Write-Host "                   - Script version $scriptVersionExt                 " -NoNewline -ForegroundColor DarkGray; Write-Host "|" -ForegroundColor Yellow
-Write-Host "+----------------------------------------------------------------------+" -ForegroundColor Yellow
-}
-
-Clear-Host #Clear the screen
-IntroBlock #Display the welcome message
-
-
 # WHAT OPERATION IS THE SCRIPT RUNNING
 Write-Host "`nSELECT ACTION`n" -BackgroundColor Blue
 Write-Host "What do you plan on doing with this script?`n"
@@ -89,20 +69,20 @@ Write-Host "    b. Update an existing size series" -NoNewLine -ForegroundColor D
 Write-Host "    c. Retire an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
 Write-Host "    d. Data cleanup from previous operations"
 while ($true) {
-    $inputLetter = Read-Host "`nEnter the letter of the action you'd like to perform (e.g., 'a' for 'Create a new size series')`n"
-    if ($inputLetter -match '^[a-d]$') {
+    $userResponse = Read-Host "`nEnter the letter of the action you'd like to perform (e.g., 'a' for 'Create a new size series')`n"
+    if ($userResponse -match '^[a-d]$') {
         break
     } else {
         Write-Host "Invalid input. Please enter a letter from 'a' to 'd'`n" -ForegroundColor Red
     }
 }
-if ($inputLetter -eq "a") {
+if ($userResponse -eq "a") {
     $scriptOperation = "create"
-} elseif ($inputLetter -eq "b") {
+} elseif ($userResponse -eq "b") {
     $scriptOperation = "update"
-} elseif ($inputLetter -eq "c") {
+} elseif ($userResponse -eq "c") {
     $scriptOperation = "retire"
-} elseif ($inputLetter -eq "d") {
+} elseif ($userResponse -eq "d") {
     $scriptOperation = "cleanup"
 }
 $scriptOpIng = $scriptOperation.Substring(0, $scriptOperation.Length - 1) + "ing"
@@ -461,8 +441,11 @@ Clear-Host
 
 
 # DEFINE SIZE SERIES TYPE
+$validInput = $true
 $showMessage = $false
+$validContinue = $false
 while ($true) {
+    Clear-Host
     Write-Host "SIZE TYPE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "What type (category) is your size series?`n"
     Write-Host "    a. General-purpose" -ForegroundColor Yellow
@@ -473,68 +456,77 @@ while ($true) {
     Write-Host "    f. FPGA-accelerated" -ForegroundColor Yellow
     Write-Host "    g. High-performance-compute" -ForegroundColor Yellow
     Write-Host "    h. Other" -ForegroundColor Yellow
-    if ($showMessage -eq $true) {
-        Write-Host "`nERROR: Invalid input. Please enter a letter from 'a' to 'h'`n" -ForegroundColor Red
-    } else {
-        Write-Host "`n `n" -ForegroundColor DarkGray
-    }
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
     if ($testMode -eq $true) {
         TestMode
         break
+    } elseif ($validContinue -eq $true) {
+        $userResponse = Read-Host "Press Enter to continue or select a different type`n"
     } else {
-        $inputLetter = Read-Host "Enter the letter of the correct category (e.g., 'a' for 'General-purpose' type)`n"
+        $userResponse = Read-Host "Select the letter for the series' category (e.g., 'a' for 'General-purpose' type)`n"
     }
-    if ($inputLetter -match '^[a-h]$') {
+    if ($userResponse -match '^[a-h]$') {
+        $validInput = $true
+        $showMessage = $true
+        if ($userResponse -eq "a") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "general-purpose"
+            $seriesTypeFancy = "General purpose"
+            $seriesTypeShort = "gen"
+        } elseif ($userResponse -eq "b") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "compute-optimized"
+            $seriesTypeFancy = "Compute optimized"
+            $seriesTypeShort = "comp"
+        } elseif ($userResponse -eq "c") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "memory-optimized"
+            $seriesTypeFancy = "Memory optimized"
+            $seriesTypeShort = "mem"
+        } elseif ($userResponse -eq "d") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "storage-optimized"
+            $seriesTypeFancy = "Storage optimized"
+            $seriesTypeShort = "stor"
+        } elseif ($userResponse -eq "e") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "gpu-accelerated"
+            $seriesTypeFancy = "GPU accelerated"
+            $seriesTypeShort = "gpu"
+        } elseif ($userResponse -eq "f") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "fpga-accelerated"
+            $seriesTypeFancy = "FPGA accelerated"
+            $seriesTypeShort = "fpga"
+        } elseif ($userResponse -eq "g") {
+            $validInput = $true; $validContinue = $true
+            $seriesType = "high-performance-compute"
+            $seriesTypeFancy = "High Performance Compute (HPC)"
+            $seriesTypeShort = "hpc"
+        } elseif ($userResponse -eq "h") {
+            $validInput = $false; $validContinue = $false
+            $seriesType = "other"
+            $showMessage = $false
+            $errorMessage = "Unsupported operation. Please contact a content developer to add a new category."
+        }
+            $messageText = "You're $scriptOpIng a $seriesTypeFancy type series."
+    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
         break
     } else {
-        $showMessage = $true
-        Clear-Host
+        $validInput = $false
+        $showMessage = $false
+        $errorMessage = "Invalid input. Please enter a letter from 'a' to 'h'"
     }
 }
 
-if ($inputLetter -eq "a") {
-    $seriesType = "general-purpose"
-    $seriesTypeFancy = "General purpose"
-    $seriesTypeShort = "gen"
-} elseif ($inputLetter -eq "b") {
-    $seriesType = "compute-optimized"
-    $seriesTypeFancy = "Compute optimized"
-    $seriesTypeShort = "comp"
-} elseif ($inputLetter -eq "c") {
-    $seriesType = "memory-optimized"
-    $seriesTypeFancy = "Memory optimized"
-    $seriesTypeShort = "mem"
-} elseif ($inputLetter -eq "d") {
-    $seriesType = "storage-optimized"
-    $seriesTypeFancy = "Storage optimized"
-    $seriesTypeShort = "stor"
-} elseif ($inputLetter -eq "e") {
-    $seriesType = "gpu-accelerated"
-    $seriesTypeFancy = "GPU accelerated"
-    $seriesTypeShort = "gpu"
-} elseif ($inputLetter -eq "f") {
-    $seriesType = "fpga-accelerated"
-    $seriesTypeFancy = "FPGA accelerated"
-    $seriesTypeShort = "fpga"
-} elseif ($inputLetter -eq "g") {
-    $seriesType = "high-performance-compute"
-    $seriesTypeFancy = "High Performance Compute (HPC)"
-    $seriesTypeShort = "hpc"
-} elseif ($inputLetter -eq "h") {
-    $seriesType = "other"
-    Write-Host "`nUNSUPPORTED OPERATION: Please contact a content developer to add a new category.`n" -ForegroundColor Red
-    return
-}
 ## Now that we know the type, define the full size path
 if ($demoMode -eq $false) {
     $sizesTypeDirectory = $gitDir + "\articles\virtual-machines\sizes\$seriesType"
 } else {
     $sizesTypeDirectory = "${originalDirectory}\demo"
 }
-## Let the user know the type they've selected
-Write-Host "`nYou're $scriptOpIng a $seriesTypeFancy type series." -ForegroundColor Magenta
-Read-Host "`nPress Enter to continue`n"
-Clear-Host
 
 
 
@@ -543,7 +535,10 @@ Clear-Host
 
 # DEFINE SERIES FAMILY
 $showMessage = $false
+$validInput = $true
+$validContinue = $false
 while ($true) {
+    Clear-Host
     Write-Host "SIZE FAMILY" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "What family or sub-family does this series belong to?`n"
 
@@ -562,38 +557,35 @@ while ($true) {
     $counter++
     Write-Host "    $counter. Other (not listed)" -ForegroundColor Yellow
 
-    if ($showMessage -eq $true) {
-        Write-Host $messageText -ForegroundColor Red
-    } else {
-        Write-Host "`n `n" -ForegroundColor DarkGray
-    }
-
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
     if ($testMode -eq $true) {
         TestMode
-        $inputNumber = "1"
+        $userResponse = "1"
+    } elseif ($validContinue -eq $true) {
+        $userResponse = Read-Host "Press Enter to continue or select a different family`n"
     } else {
-        $inputNumber = Read-Host "Enter the number of the correct family or subfamily (e.g., '1' for 'A family')`n"
+        $userResponse = Read-Host "Enter the number of the correct family or subfamily (e.g., '1' for 'A family')`n"
     }
-    if ($inputNumber -match "^[1-$maxValidReadEntries]$") {
+
+
+    if ($userResponse -match "^[1-$maxValidReadEntries]$") {
+        $showMessage = $true; $validInput = $true; $validContinue = $true
+        $selectedFile = $files[$userResponse - 1].Name
+        $seriesFamily = $selectedFile -replace "-family.md", "" 
+        $seriesFamilyUpper = $seriesFamily.ToUpper()
+        $messageText = "You're $scriptOpIng a '$seriesFamilyUpper' family, $seriesTypeFancy series."
+    } elseif ($userResponse -eq $counter) {
+        $showMessage = $false; $validInput = $false; $validContinue = $false
+        $errorMessage = "Unsupported operation. Please contact a content developer to add a family."
+    } elseif ($userResponse -eq "" -and $validContinue -eq $true) {
         break
-    } elseif ($inputNumber -eq $counter) {
-        $messageText = "`nUNSUPPORTED OPERATION: Please contact a content developer to add a family.`n"
-        $showMessage = $true
-        Clear-Host
     } else {
-        $messageText = "`nERROR: Invalid input. Please enter a number from 1 to $counter or 'done'.`n"
-        $showMessage = $true
-        Clear-Host
+        $showMessage = $false; $validInput = $false; $validContinue = $false
+        $errorMessage = "Invalid input. Please enter a number from 1 to $counter or 'done'."
     }
 }
-
-## Set the family name based on number selection
-$selectedFile = $files[$inputNumber - 1].Name
-$seriesFamily = $selectedFile -replace "-family.md", "" 
-$seriesFamilyUpper = $seriesFamily.ToUpper()
-Write-Host "`nYou're $scriptOpIng a '$seriesFamilyUpper' family, $seriesTypeFancy series." -ForegroundColor Magenta
-Read-Host "`nPress Enter to continue`n"
-Clear-Host
 
 
 
@@ -602,78 +594,66 @@ Clear-Host
 
 
 # DEFINE THE SIZE SERIES NAME LOOP
-$validFileSelect = $false
-while ($validFileSelect -eq $false) {
-
+$showMessage = $false
+$validInput = $true
+$validContinue = $false
+while ($true) {
+    Clear-Host
     # Check if $seriesInput starts with $seriesFamily, case-insensitively
     Write-Host "SIZE SERIES NAME" -NoNewline -BackgroundColor Blue; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "What is the full name of the size series you're working on? `n(Make sure to include the family/subfamily name you selected. In this case: '${seriesFamilyUpper}')`n"
+    if ($seriesValid -eq $true) { Write-Host "`n$seriesInput is in the $seriesFamilyUpper family." -ForegroundColor Green } else { Write-Host "`n" }
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+    
     if ($testMode -eq $true) {
         TestMode
         $seriesInput = "AxTESTING"
+    } elseif ($validContinue -eq $true) {
+        $seriesInput = Read-Host "Press Enter to continue or enter a different series name`n"
     } else {
         $seriesInput = Read-Host "Enter the size series name (e.g., '${seriesFamilyUpper}v2', 'Fsv2', 'M')`n"
         $seriesValid = $false
     }
-    while ($seriesValid -eq $false) {
-        if ($seriesInput.StartsWith($seriesFamily, [StringComparison]::InvariantCultureIgnoreCase)) {
-            Write-Host "`n$seriesInput is in the $seriesFamilyUpper family.`n" -ForegroundColor Green
-            $seriesValid = $true
+    
+    if ($seriesInput.StartsWith($seriesFamily, [StringComparison]::InvariantCultureIgnoreCase)) {
+        $seriesValid = $true
+        # Check if the input ends with '-series'
+        if ($seriesInput.EndsWith("-series")) {
+            # If the input already ends with '-series', do something specific
+            $seriesSelected = $seriesInput
+            $seriesBaseName = $seriesSelected -replace "-series", ""
         } else {
-            $seriesInput = Read-Host "`nERROR: $seriesInput does not start with '$seriesFamilyUpper'.`nPlease enter a valid name or restart the script if '$seriesFamilyUpper family' is incorrect.`n"
+            # If the input does not end with '-series', add '-series' to the end
+            $seriesBaseName = $seriesInput
+            $seriesSelected = $seriesInput + "-series"
         }
-    }
-    # Check if the input ends with '-series'
-    if ($seriesInput.EndsWith("-series")) {
-        # If the input already ends with '-series', do something specific
-        $seriesSelected = $seriesInput
-        $seriesBaseName = $seriesSelected -replace "-series", ""
+        # Define the file name for the series selected
+        $seriesFileName = $seriesSelected.ToLower() + ".md"
+        $seriesNameLower = $seriesSelected.ToLower()
+        $seriesBaseNameLower = $seriesBaseName.ToLower()
+
+        # Check if the file already exists
+        $foundFiles = Get-ChildItem -Path $sizesTypeDirectory -Filter $seriesFileName -File -ErrorAction SilentlyContinue
+        if ($foundFiles) {
+            foreach ($file in $foundFiles) {
+                $invalidInput = $true; $validContinue = $false
+                $errorMessage = "The $seriesFileName file already exists. Please choose a different series name or update the existing series..."
+                }
+            } else {
+                $showMessage = $true; $messageText = "You're now working on: $seriesSelected"
+                $validContinue = $true; $validInput = $true
+        }
+    } elseif ($seriesInput -eq "" -and $validContinue -eq $true) {
+        break
     } else {
-        # If the input does not end with '-series', add '-series' to the end
-        $seriesBaseName = $seriesInput
-        $seriesSelected = $seriesInput + "-series"
+        $validInput = $false; $validContinue = $false
+        $errorMessage = "$seriesInput does not start with '$seriesFamilyUpper'.`nPlease enter a valid name or restart the script if '$seriesFamilyUpper family' is incorrect."
     }
-    # Define the file name for the series selected
-    $seriesFileName = $seriesSelected.ToLower() + ".md"
-    $seriesNameLower = $seriesSelected.ToLower()
-    $seriesBaseNameLower = $seriesBaseName.ToLower()
-
-    Write-Host "`nYou're now working on: $seriesSelected" -ForegroundColor Magenta
-    Write-Host "  type: $seriesTypeFancy`n" -ForegroundColor DarkGray
-    Read-Host "`nPress Enter to continue`n"
-
-
-
-
-
-    # See if the file exists before continuing. This is dependant on the script operation mode.
-    $foundFiles = Get-ChildItem -Path $sizesTypeDirectory -Filter $seriesFileName -File -ErrorAction SilentlyContinue
-
-    # Check if any files were found
-    if ($foundFiles) {
-        foreach ($file in $foundFiles) {
-            Write-Host "File found: $($file.Name)"
-            if ($scriptOperation -eq "create") {
-                Write-Host "`nERROR: The $seriesFileName file already exists. Please choose a different series name or update the existing series...`n" -ForegroundColor Red
-                $validFileSelect = $false
-            } elseif ($scriptOperation -eq "update") {
-                Write-Host "The file exists and will be updated."
-                $validFileSelect = $true
-            } elseif ($scriptOperation -eq "retire") {
-                Write-Host "The file exists and will be retired."
-                $validFileSelect = $true
-            }
-        }
-    } else {
-        Write-Debug "`nNo files named '$seriesFileName' found in $sizesTypeDirectory."
-        if ($scriptOperation -eq "create") {
-            $validFileSelect = $true
-        } else {
-            Write-Host "`nERROR: No file named '$seriesFileName' found. Please choose a different series name or create a new series...`n" -ForegroundColor Red
-            $validFileSelect = $false
-        }
-    }     
 }
+
+
 
 
 
@@ -2617,13 +2597,15 @@ if ($doCreateSpecs -eq $true) {
         $specsContent = $specsContent -replace "MEMORYDATA", "$specAggMemorySpeed" } else { $specsContent = $specsContent -replace "MEMORYDATA", "" }
     ### Table: Local Storage
     if ($hwHasPartTMPDSK -eq $true) {
-        $specsContent = $specsContent -replace "TEMPDISKDATA", "TEMPDISKSIZE GiB <br>TEMPDISKIOPS IOPS (RR) <br>TEMPDISKSPEED MBps (RR)"
-        $specsContent = $specsContent -replace "TEMPDISKSIZE", "$specAggLocalDiskSize"
-        $specsContent = $specsContent -replace "TEMPDISKIOPS", "$specAggLocalDiskRRIOPS"
-        $specsContent = $specsContent -replace "TEMPDISKSPEED", "$specAggLocalDiskRRSpeed"
-        if ($specAggLocalDiskCount -match "1") {
-            $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disk"
-        } else { $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disks" }
+        $specsContent = $specsContent -replace "TEMPDISKDATA", "TEMPDISKSIZE <br>TEMPDISKIOPS <br>TEMPDISKSPEED"
+        if ([string]::IsNullOrEmpty($specAggLocalDiskRRIOPS) -or $specAggLocalDiskRRIOPS -eq "N/A") { $specsContent = $specsContent -replace "TEMPDISKIOPS", ""
+        } else { $specsContent = $specsContent -replace "TEMPDISKIOPS", "$specAggLocalDiskRRIOPS IOPS (RR)"}
+        if ([string]::IsNullOrEmpty($specAggLocalDiskRRSpeed) -or $specAggLocalDiskRRSpeed -eq "N/A") { $specsContent = $specsContent -replace "TEMPDISKSPEED", ""
+        } else { $specsContent = $specsContent -replace "TEMPDISKSPEED", "$specAggLocalDiskRRSpeed MBps (RR)" }
+        if ([string]::IsNullOrEmpty($specAggLocalDiskSize) -or $specAggLocalDiskSize -eq "N/A") { $specsContent = $specsContent -replace "TEMPDISKSIZE", ""
+        } else { $specsContent = $specsContent -replace "TEMPDISKSIZE", "$specAggLocalDiskSize GiB" }
+        if ($specAggLocalDiskCount -match "1") { $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disk"
+        } else { $specsContent = $specsContent -replace "TEMPDISKQTY", "$specAggLocalDiskCount Disks"}
     } else {
         $specsContent = $specsContent -replace "TEMPDISKQTY", "None"
         $specsContent = $specsContent -replace "TEMPDISKDATA", ""
@@ -2631,14 +2613,22 @@ if ($doCreateSpecs -eq $true) {
     ### Table: Remote Storage
     $specsContent = $specsContent -replace "DATADISKSQTY", "$specAggRemoteDiskCount"
     if ([string]::IsNullOrEmpty($specAggRemoteDiskIOPS) -or $specAggRemoteDiskIOPS -eq "N/A") {
-        $specsContent = $specsContent -replace "DATADISKDATA", ""
-    } else { $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggRemoteDiskIOPS IOPS" }
+        $specsContent = $specsContent -replace "DATADISKIOPS", ""
+    } else { 
+        $specsContent = $specsContent -replace "DATADISKIOPS", "$specAggRemoteDiskIOPS IOPS" 
+    }
     if ([string]::IsNullOrEmpty($specAggRemoteDiskSpeed) -or $specAggRemoteDiskSpeed -eq "N/A") {
-        $specsContent = $specsContent -replace "DATADISKDATA", ""
-    } else { $specsContent = $specsContent -replace "DATADISKSPEED", "$specAggRemoteDiskSpeed MBps" }
+        $specsContent = $specsContent -replace "DATADISKSPEED", ""
+    } else { 
+        $specsContent = $specsContent -replace "DATADISKSPEED", "$specAggRemoteDiskSpeed MBps" 
+    }
     ### Table: Network
     $specsContent = $specsContent -replace "NICSQTY", "$specAggNetNicCount"
-    $specsContent = $specsContent -replace "NETBANDWIDTH", "$specAggNetBandwidth"
+    if ([string]::IsNullOrEmpty($specAggNetBandwidth) -or $specAggNetBandwidth -eq "N/A") {
+        $specsContent = $specsContent -replace "NETBANDWIDTH", ""
+    } else {
+        $specsContent = $specsContent -replace "NETBANDWIDTH", "$specAggNetBandwidth"
+    }
     ### Table: Accelerators
     if ($acceleratorPresent -eq $true) {
         ## Create template word values

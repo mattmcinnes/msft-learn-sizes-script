@@ -1,5 +1,5 @@
 # Import variables from the main sizes_script file
-. ./sizes_script/version.ps1
+. ./bin/version.ps1
 
 
 # WELCOME MESSAGE
@@ -19,5 +19,7 @@ Write-Host "+-------------------------------------------------------------------
 Clear-Host #Clear the screen
 IntroBlock #Display the welcome message
 
-. ./sizes_script/update.ps1
-. ./sizes_script/sizes_scipt.ps1
+. ./bin/update.ps1
+Clear-Host
+IntroBlock
+. ./bin/sizes_script.ps1
