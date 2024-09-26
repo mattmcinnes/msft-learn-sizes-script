@@ -43,22 +43,28 @@ function DelayDots {
 
 function TestMode {
     Write-Host "`nTesting mode is enabled. Selecting defaults`n"
-    $userResponse = "a"
-    $userResponse = "1"
-    $seriesValid = $true
 }
 
 # PRE-RUN OPS AND CLEANUP
+
 ## Delete all data in the temp directory
 Get-ChildItem -Path $tempDirectory -Recurse | Remove-Item -Force -Recurse
+
 ## Create an info file in the temp directory
 New-Item -Path $tempDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$tempDirectory\.temp" -Force
+
 ## Create an info file in the INPUT directory
 New-Item -Path $inputDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$inputDirectory\.temp" -Force
+
 ## Create an info file in the archive directory
 New-Item -Path $archiveDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$archiveDirectory\.temp" -Force
+
 ## Create an info file in the BATCH directory
 New-Item -Path $batchDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$batchDirectory\.temp" -Force
 
 
 # WHAT OPERATION IS THE SCRIPT RUNNING
