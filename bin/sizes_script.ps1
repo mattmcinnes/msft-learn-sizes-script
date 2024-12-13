@@ -43,37 +43,43 @@ function DelayDots {
 
 function TestMode {
     Write-Host "`nTesting mode is enabled. Selecting defaults`n"
-    $userResponse = "a"
-    $userResponse = "1"
-    $seriesValid = $true
 }
 
 # PRE-RUN OPS AND CLEANUP
+
 ## Delete all data in the temp directory
 Get-ChildItem -Path $tempDirectory -Recurse | Remove-Item -Force -Recurse
+
 ## Create an info file in the temp directory
 New-Item -Path $tempDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$tempDirectory\.temp" -Force
+
 ## Create an info file in the INPUT directory
 New-Item -Path $inputDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$inputDirectory\.temp" -Force
+
 ## Create an info file in the archive directory
 New-Item -Path $archiveDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$archiveDirectory\.temp" -Force
+
 ## Create an info file in the BATCH directory
 New-Item -Path $batchDirectory -Name ".temp" -ItemType "file" -Force | Out-Null
+Remove-Item -Path "$batchDirectory\.temp" -Force
 
 
 # WHAT OPERATION IS THE SCRIPT RUNNING
 Write-Host "`nSELECT ACTION`n" -BackgroundColor Blue
 Write-Host "What do you plan on doing with this script?`n"
-Write-Host "    a. Create a new size series" -ForegroundColor Yellow
-Write-Host "    b. Update an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
-Write-Host "    c. Retire an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host "(not yet fully implemented)" -ForegroundColor DarkGray
+Write-Host "    a. Create a new size series" -ForegroundColor Cyan
+Write-Host "    b. Update an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host " (not yet fully implemented)" -ForegroundColor DarkGray
+Write-Host "    c. Retire an existing size series" -NoNewLine -ForegroundColor DarkGray; Write-Host " (not yet fully implemented)" -ForegroundColor DarkGray
 Write-Host "    d. Data cleanup from previous operations"
 while ($true) {
     $userResponse = Read-Host "`nEnter the letter of the action you'd like to perform (e.g., 'a' for 'Create a new size series')`n"
     if ($userResponse -match '^[a-d]$') {
         break
     } else {
-        Write-Host "Invalid input. Please enter a letter from 'a' to 'd'`n" -ForegroundColor Red
+        Write-Host "Invalid input. Please enter a letter from 'a' to 'd'`n" -ForegroundColor Yellow
     }
 }
 if ($userResponse -eq "a") {
@@ -87,9 +93,9 @@ if ($userResponse -eq "a") {
 }
 $scriptOpIng = $scriptOperation.Substring(0, $scriptOperation.Length - 1) + "ing"
 if ($scriptOperation -eq "cleanup") {
-    Write-Host "`nYou're running the script in cleanup mode." -ForegroundColor Magenta
+    Write-Host "`nYou're running the script in cleanup mode." -ForegroundColor Green
 } else {
-    Write-Host "`nYou're $scriptOpIng a size series." -ForegroundColor Magenta
+    Write-Host "`nYou're $scriptOpIng a size series." -ForegroundColor Green
 }
 
 
@@ -99,16 +105,16 @@ Clear-Host
 
 ## CLEANUP OPERATION
 if ($scriptOperation -eq "cleanup") {
-    Write-Host "CLEANUP OPERATION" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-    Write-Host "This operation will remove all files in the 'OUTPUT', 'INPUT', and 'BATCH' directories.`n" -ForegroundColor Red
-    Write-Host "WARNING: This operation cannot be undone. Please ensure you have backed up any important data before continuing.`n" -ForegroundColor Red
-    Write-Host "NOTE: This operation will not remove any files in the 'archive' directory.`n" -ForegroundColor Yellow
+    Write-Host "CLEANUP OPERATION" -BackgroundColor Yellow -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "This operation will remove all files in the 'OUTPUT', 'INPUT', and 'BATCH' directories.`n" -ForegroundColor Yellow
+    Write-Host "WARNING: This operation cannot be undone. Please ensure you have backed up any important data before continuing.`n" -ForegroundColor Yellow
+    Write-Host "NOTE: This operation will not remove any files in the 'archive' directory.`n" -ForegroundColor Cyan
     while ($true) {
         $userResponse = Read-Host "Type 'e' to erase the .\OUTPUT, .\INPUT, and .\BATCH directories and continue`n"
         if ($userResponse -eq "e") {
             break
         } else {
-            Write-Host "Invalid input. Please type 'e' to erase the .\OUTPUT and .\INPUT directories and continue`n" -ForegroundColor Red
+            Write-Host "Invalid input. Please type 'e' to erase the .\OUTPUT and .\INPUT directories and continue`n" -ForegroundColor Yellow
         }
     }
     Get-ChildItem -Path $outputDirectory -Recurse | Remove-Item -Force -Recurse
@@ -146,15 +152,15 @@ while ($true) {
     Write-Host "        - You can run this script multiple times to create a single PR with multiple sizes affected." -ForegroundColor DarkGray
     Write-Host "        - Markdown files are moved to a newly created 'BATCH' after script completion." -ForegroundColor DarkGray
     Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "NOTE:" -BackgroundColor DarkYellow -NoNewline ; Write-Host " The 'OUTPUT' folder will only contain per-run files." -ForegroundColor DarkGray
-    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "WARNING:" -BackgroundColor Red -NoNewline ; Write-Host " Do not mix size types in batch mode (1 compute-optimized size + 2 general-purpose sizes)." -ForegroundColor DarkGray
+    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "WARNING:" -BackgroundColor Yellow -NoNewline ; Write-Host " Do not mix size types in batch mode (1 compute-optimized size + 2 general-purpose sizes)." -ForegroundColor DarkGray
     Write-Host " "
     if ($validSelect -eq "c") { Write-Host "   [c. Read-only run]" -ForegroundColor Green } else { Write-Host "    c. Read-only run" }
     Write-Host "        - Read-only mode clears out the script's OUTPUT folder for future runs." -ForegroundColor DarkGray
-    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "WARNING:" -BackgroundColor Red -NoNewline ; Write-Host " No data will be saved after the script is finished." -ForegroundColor DarkGray
+    Write-Host "        - " -ForegroundColor DarkGray -NoNewline ; Write-Host "WARNING:" -BackgroundColor Yellow -NoNewline ; Write-Host " No data will be saved after the script is finished." -ForegroundColor DarkGray
 
 
-    if ($invalidInput -eq $true) { Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Red }
-    if ($showMessage -eq $true -and $invalidInput -eq $false) { Write-Host "`n$showMessageContent`n" -ForegroundColor Magenta }
+    if ($invalidInput -eq $true) { Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Yellow }
+    if ($showMessage -eq $true -and $invalidInput -eq $false) { Write-Host "`n$showMessageContent`n" -ForegroundColor Green }
     if ($showMessage -eq $false -and $invalidInput -eq $false) { Write-Host "`n`n" }
 
     Write-Host "Enter a letter 'a - 'c' to select the script operation and move files accordingly.`n"
@@ -201,8 +207,8 @@ if ($msftAlias -eq $null) {
         Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - MS Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "What is your Microsoft Alias (for ms.author).`n"
         Write-Host "NOTE: You will enter your GitHub alias in the next step." -ForegroundColor DarkYellow
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
         if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your Microsoft alias`n"
         } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
@@ -237,8 +243,8 @@ if ($gitAlias -eq $null) {
         Write-Host "ALIAS ENTRY" -BackgroundColor Blue -NoNewline; Write-Host " - GitHub Alias" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "What is your GitHub Alias (for author and topic notifications)`n"
         Write-Host "NOTE: If your GitHub alias is the same as your Microsoft alias, entering 's' will reuse the previous value." -ForegroundColor DarkYellow
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
         if ($validContinue -eq $false) { $userResponse = Read-Host "Enter your GitHub alias`n"
         } else { $userResponse = Read-Host "Press Enter to continue or enter a different alias`n" }
@@ -274,11 +280,11 @@ if ($gitAlias -eq $null) {
 # DATA WARNING AND RESET
 Clear-Host 
 if ($batchMode -ne $true) {
-    Write-Host "DATA RESET" -BackgroundColor Red -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+    Write-Host "DATA RESET" -BackgroundColor Yellow -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "WARNING:"`
     "ALL FILES IN THE SCRIPT 'OUTPUT' and 'INPUT' DIRECTORY WILL BE REMOVED!"`
     "`nIf you've used this script previously there might be important data in these directories."`
-    "`nPlease move all data to a safe location or ensure it can be erased before continuing." -ForegroundColor Red
+    "`nPlease move all data to a safe location or ensure it can be erased before continuing." -ForegroundColor Yellow
 
     Write-Host "
     Output Directory: 
@@ -288,7 +294,7 @@ if ($batchMode -ne $true) {
     Input Directory: 
         - Path: $inputDirectory
         - Operation: Data moved to 'archive' directory
-    " -ForegroundColor Yellow
+    " -ForegroundColor Cyan
 
     if ($demoMode -eq $true) {
         Write-Host "`nNOTE: Demo mode is enabled but the script will still erase the INPUT directory and create new files.`n" -ForegroundColor DarkYellow
@@ -393,10 +399,10 @@ while ($true) {
             $commonDirsList = "C:\GitHub\$repoName", "C:\Users\$env:USERNAME\Documents\GitHub\$repoName", "C:\Users\$env:USERNAME\GitHub\$repoName", "D:\GitHub\$repoName"
             $commonDirCount = $commonDirsList.Count
             for ($i = 0; $i -lt $commonDirCount; $i++) {
-                Write-Host "    $($i + 1). $($commonDirsList[$i])" -ForegroundColor Yellow
+                Write-Host "    $($i + 1). $($commonDirsList[$i])" -ForegroundColor Cyan
             }
             if ($showMessage -eq $true) {
-                Write-Host $messageText -ForegroundColor Red
+                Write-Host $messageText -ForegroundColor Yellow
             } else {
                 Write-Host "`n" -ForegroundColor DarkGray
             }
@@ -429,11 +435,11 @@ while ($true) {
         }
         break
     } else {
-        Write-Host "Invalid input. Please enter 'y' or 'n'" -ForegroundColor Red
+        Write-Host "Invalid input. Please enter 'y' or 'n'" -ForegroundColor Yellow
         $userResponse = Read-Host
     }
 }
-Write-Host "`nThe directory is set to: $gitDir" -ForegroundColor Magenta
+Write-Host "`nThe directory is set to: $gitDir" -ForegroundColor Green
 Read-Host "`nPress Enter to continue`n"
 Clear-Host
 
@@ -448,16 +454,16 @@ while ($true) {
     Clear-Host
     Write-Host "SIZE TYPE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "What type (category) is your size series?`n"
-    Write-Host "    a. General-purpose" -ForegroundColor Yellow
-    Write-Host "    b. Compute-optimized" -ForegroundColor Yellow
-    Write-Host "    c. Memory-optimized" -ForegroundColor Yellow
-    Write-Host "    d. Storage-optimized" -ForegroundColor Yellow
-    Write-Host "    e. GPU-accelerated" -ForegroundColor Yellow
-    Write-Host "    f. FPGA-accelerated" -ForegroundColor Yellow
-    Write-Host "    g. High-performance-compute" -ForegroundColor Yellow
-    Write-Host "    h. Other" -ForegroundColor Yellow
-    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    Write-Host "    a. General-purpose" -ForegroundColor Cyan
+    Write-Host "    b. Compute-optimized" -ForegroundColor Cyan
+    Write-Host "    c. Memory-optimized" -ForegroundColor Cyan
+    Write-Host "    d. Storage-optimized" -ForegroundColor Cyan
+    Write-Host "    e. GPU-accelerated" -ForegroundColor Cyan
+    Write-Host "    f. FPGA-accelerated" -ForegroundColor Cyan
+    Write-Host "    g. High-performance-compute" -ForegroundColor Cyan
+    Write-Host "    h. Other" -ForegroundColor Cyan
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
     if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
     if ($testMode -eq $true) {
         TestMode
@@ -551,14 +557,14 @@ while ($true) {
         $counter++
         $familyFileTrunk = $file.Name -replace "-family\.md", " family"
         $familyFileTrunk = $familyFileTrunk.Substring(0, 2).ToUpper() + $familyFileTrunk.Substring(2)
-        Write-Host "    $counter. ${familyFileTrunk}" -ForegroundColor Yellow
+        Write-Host "    $counter. ${familyFileTrunk}" -ForegroundColor Cyan
     }
     $maxValidReadEntries = $counter
     $counter++
-    Write-Host "    $counter. Other (not listed)" -ForegroundColor Yellow
+    Write-Host "    $counter. Other (not listed)" -ForegroundColor Cyan
 
-    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
     if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
     if ($testMode -eq $true) {
         TestMode
@@ -603,8 +609,8 @@ while ($true) {
     Write-Host "SIZE SERIES NAME" -NoNewline -BackgroundColor Blue; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "What is the full name of the size series you're working on? `n(Make sure to include the family/subfamily name you selected. In this case: '${seriesFamilyUpper}')`n"
     if ($seriesValid -eq $true) { Write-Host "`n$seriesInput is in the $seriesFamilyUpper family." -ForegroundColor Green } else { Write-Host "`n" }
-    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+    if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+    if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
     if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
     
     if ($testMode -eq $true) {
@@ -742,19 +748,19 @@ if ($scriptOperation -eq "create") {
         Write-Host "CUSTOM HARDWARE PRESENCE" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "What hardware types are present on the series' host?`n"
         Write-Host "NOTE: It's unlikely (and often impossible) for a size to contain all of the options listed below.`n" -ForegroundColor DarkYellow
-        Write-Host "WARNING: Double check the presence of Local (Temp) storage on your size! You can't add or remove this later.`n" -ForegroundColor Red
+        Write-Host "WARNING: Double check the presence of Local (Temp) storage on your size! You can't add or remove this later.`n" -ForegroundColor Yellow
         Write-Host "A 'standard host' has:`n  - A detailed CPU (entered later)`n  - Unspecified memory specs (aside from capacity)`n  - A Mellanox (now Nvidia) ConnectX NIC.`n"
         Write-Host "Disabling a hardware type will populate it with: `n  - Default values for required components`n  - No values for those that don't normally exist.`n"
         Write-Host "  Hardware component status:" -ForegroundColor DarkGray
-        Write-Host "    1. Local Storage (Temp Disks)           " -NoNewLine; if ($hwHasPartTMPDSK -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
-        Write-Host "    2. Custom Memory (RAM)                  " -NoNewLine; if ($hwHasPartMEM -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Yellow }
-        Write-Host "    3. Custom Network Interface Card (NIC)  " -NoNewLine; if ($hwHasPartNIC -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Yellow }
-        Write-Host "    4. Graphics Processing Unit (GPU)       " -NoNewLine; if ($hwHasPartGPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
-        Write-Host "    5. Neural/AI Processing Unit (NPU)      " -NoNewLine; if ($hwHasPartNPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
-        Write-Host "    6. Field-Programmable Gate Array (FPGA) " -NoNewLine; if ($hwHasPartFPGA -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Red }
+        Write-Host "    1. Local Storage (Temp Disks)           " -NoNewLine; if ($hwHasPartTMPDSK -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Yellow }
+        Write-Host "    2. Custom Memory (RAM)                  " -NoNewLine; if ($hwHasPartMEM -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Cyan }
+        Write-Host "    3. Custom Network Interface Card (NIC)  " -NoNewLine; if ($hwHasPartNIC -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[Default]" -ForegroundColor Cyan }
+        Write-Host "    4. Graphics Processing Unit (GPU)       " -NoNewLine; if ($hwHasPartGPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Yellow }
+        Write-Host "    5. Neural/AI Processing Unit (NPU)      " -NoNewLine; if ($hwHasPartNPU -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Yellow }
+        Write-Host "    6. Field-Programmable Gate Array (FPGA) " -NoNewLine; if ($hwHasPartFPGA -eq $true) { Write-Host "[Present]" -ForegroundColor Green } else { Write-Host "[None]" -ForegroundColor Yellow }
         
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
         $userResponse = Read-Host "State the presence of a specific custom component by entering the number of a listed hardware type`nEnter 'done' to continue with the above hardware presence values`n"
 
@@ -840,14 +846,14 @@ if ($scriptOperation -eq "create") {
         $counter = 1
         foreach ($row in $csvData) {
             Write-Host "    $counter. $($row.'Feature-Name')" -NoNewline
-            if ($($row.'Support-Level') -eq 'Supported') { Write-Host " [Supported]" -ForegroundColor Green } else { Write-Host " [Not Supported]" -ForegroundColor Red }
+            if ($($row.'Support-Level') -eq 'Supported') { Write-Host " [Supported]" -ForegroundColor Green } else { Write-Host " [Not Supported]" -ForegroundColor Yellow }
             $counter++
         }
         Write-Host "    $counter. New Feature"
         $maxValidReadEntries = $counter - 1
         
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
         $userResponse = Read-Host "Change the supported status of specific custom component by entering the corresponding number from the list above. `nEnter 'done' to continue with the selected feature support values`n"
 
@@ -920,8 +926,8 @@ if ($scriptOperation -eq "create") {
         Write-Host "DEFINE HARDWARE" -BackgroundColor Blue -NoNewline; Write-Host " - CPU Count" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "How many different CPU models are represented in this series' host? A single series could use either one of multiple generations of a CPU.`n"
         Write-Host "NOTE: Most series only utilize one CPU model.`n" -ForegroundColor DarkYellow
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
         if ($validContinue -eq $false) { $userResponse = Read-Host "Enter the number of CPUs present on the host`n"
         } else { $userResponse = Read-Host "Press Enter to continue or enter a different number to select another CPU count`n" }
@@ -960,22 +966,22 @@ if ($scriptOperation -eq "create") {
             if ($hwCpuModelCount -gt 1 ) { Write-Host " - CPU Architecture" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
             } else { Write-Host " - CPU Architecture (Iteration ${hwCpuModelIteration})" -ForegroundColor Blue -NoNewLine; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green }
             if ($hwCpuModelCount -gt 1) { Write-Host "What architecture is CPU #${hwCpuModelCount}?`n" } else { Write-Host "What architecture is the host CPU?`n" }
-            Write-Host "NOTE: The most common CPU architecture on Azure is" -NoNewline -ForegroundColor DarkYellow; Write-Host " x86-64.`n" -ForegroundColor Yellow
+            Write-Host "NOTE: The most common CPU architecture on Azure is" -NoNewline -ForegroundColor DarkYellow; Write-Host " x86-64.`n" -ForegroundColor Cyan
             Write-Host "  CPU Architectures:" -ForegroundColor DarkGray
             while ($true) {
                 $counter = 0
                 foreach ($dir in $hardwareTypes) {
                     # Output the file name and its assigned letter
                     $counter++
-                    if ($dir.Name -eq $hwArch) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } elseif ($dir.Name -eq "x86-64" -and $dir.Name -ne $hwArch) { Write-Host "     $counter. $($dir.Name)" -ForegroundColor Yellow } else { Write-Host "     $counter. $($dir.Name)" }
+                    if ($dir.Name -eq $hwArch) { Write-Host "   [ $counter. $($dir.Name) ]" -ForegroundColor Green } elseif ($dir.Name -eq "x86-64" -and $dir.Name -ne $hwArch) { Write-Host "     $counter. $($dir.Name)" -ForegroundColor Cyan } else { Write-Host "     $counter. $($dir.Name)" }
                 }
                 $maxValidReadEntries = $counter
                 $counter++
                 Write-Host "     $counter. Other"
                 break
             }
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
             ### Input Message ###
             if ($retryCount -eq 0) {
@@ -1041,8 +1047,8 @@ if ($scriptOperation -eq "create") {
                 Write-Host "     $counter. Other"
                 break
             }
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
             ### Input Portion ###
             if ($retryCount -eq 0) {
@@ -1109,8 +1115,8 @@ if ($scriptOperation -eq "create") {
                 Write-Host "     $counter. Other"
                 break
             }
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
             ### Input Portion ###
             if ($retryCount -eq 0) {
@@ -1169,8 +1175,8 @@ if ($scriptOperation -eq "create") {
             Write-Host "  Full CPU name:" -ForegroundColor DarkGray
             if ($hwModel -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModelCopy}" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} <model>" }
 
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
             ### Input Portion ###
@@ -1236,8 +1242,8 @@ if ($scriptOperation -eq "create") {
             Write-Host "  Full CPU name:" -ForegroundColor DarkGray
             Write-Host "    ${hwOem} ${hwBrand} ${hwModelCopy}:"
 
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
             ### Input Portion ###
@@ -1318,8 +1324,8 @@ if ($scriptOperation -eq "create") {
                 Write-Host "     $counter. Other"
                 break
             }
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
             ### Input Portion ###
             if ($retryCount -eq 0) {
@@ -1387,8 +1393,8 @@ if ($scriptOperation -eq "create") {
                 Write-Host "     $counter. Other"
                 break
             }
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
             ### Input Portion ###
             if ($retryCount -eq 0) {
@@ -1447,8 +1453,8 @@ if ($scriptOperation -eq "create") {
             Write-Host "  Full ${accType} name:" -ForegroundColor DarkGray
             if ($hwModel -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModelCopy}" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} <model>" }
 
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
             ### Input Portion ###
@@ -1503,8 +1509,8 @@ if ($scriptOperation -eq "create") {
             Write-Host "  ${hwType} Memory:" -ForegroundColor DarkGray
             if ($hwMemBuffer -ne $null) { Write-Host "    ${hwOem} ${hwBrand} ${hwModel} ${hwMemBuffer}GB" -ForegroundColor Green } else { Write-Host "    ${hwOem} ${hwBrand} ${hwModel} <memory>" }
 
-            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+            if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+            if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
             if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
             ### Input Portion ###
@@ -1583,8 +1589,8 @@ if ($scriptOperation -eq "create") {
         Write-Host "    - Size names should follow the <Qualifier>_<Type><Specs>_v<Version> format (e.g., Standard_D8_v3)."
         Write-Host "    - Save the file when you're done! Otherwise you'll end up with errors..."
 
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
         Write-Host "Type 'n' to open the file in Notepad.exe"
@@ -1614,7 +1620,7 @@ if ($scriptOperation -eq "create") {
             DelayDots
         } elseif ($userResponse -eq "e") {
             $csvData = Import-Csv -Path "$examplesDirectory\example-sizes-name-list.csv"
-            Write-Host "`nHere's an example of the file content:`n" -ForegroundColor Magenta
+            Write-Host "`nHere's an example of the file content:`n" -ForegroundColor Green
             Write-Host "  Size-Name" -ForegroundColor DarkGray
             foreach ($row in $csvData) {
                 Write-Host "  " -NoNewline
@@ -1668,7 +1674,7 @@ if ($scriptOperation -eq "create") {
             Write-Host "    - " -NoNewline
             Write-Host $row."Size-Name"
         }
-        Write-Host "`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Red
+        Write-Host "`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Yellow
         Write-Host "NOTE: If you continue while the file is still open, you will encounter errors and the script will fail!`n" -ForegroundColor DarkYellow
         Write-Host "If there's an issue with these series names, press 'n' to open the file in notepad and make edits.`nIf these series names look good, press Enter to continue.'`n:" -NoNewline
         if ($testMode -eq $true) {
@@ -1847,22 +1853,22 @@ if ($scriptOperation -eq "create") {
         Write-Host "SPECIFICATIONS INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "Now we'll enter the data for the ${seriesBaseName} series' specs.`n"
         Write-Host "Fill out the following INPUT .csv files (comma-deliniated) with relevant data using Excel or a text editor:`n"
-        Write-Host "  1. CPU and Memory specs   " -NoNewLine; if ($global:fileStatus1 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus1" -ForegroundColor Green } else { Write-Host "$global:fileStatus1" -ForegroundColor Yellow }
+        Write-Host "  1. CPU and Memory specs   " -NoNewLine; if ($global:fileStatus1 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus1" -ForegroundColor Green } else { Write-Host "$global:fileStatus1" -ForegroundColor Cyan }
         Write-Host "    $specsCpuMemoryINPUTLocalPath `n" -ForegroundColor DarkGray
         if ($localStoragePresent -eq $true) {
-            Write-Host "  2. Local Storage specs    " -NoNewLine; if ($global:fileStatus2 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus2" -ForegroundColor Green } else { Write-Host "$global:fileStatus2" -ForegroundColor Yellow }
+            Write-Host "  2. Local Storage specs    " -NoNewLine; if ($global:fileStatus2 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus2" -ForegroundColor Green } else { Write-Host "$global:fileStatus2" -ForegroundColor Cyan }
             Write-Host "    $specsStorageLocalINPUTLocalPath `n" -ForegroundColor DarkGray
         } else {
             Write-Host "  2. Local Storage specs    " -NoNewLine; Write-Host "(ignored)" -ForegroundColor DarkGreen;
             Write-Host "    No INPUT file present as feature is disabled. `n " -ForegroundColor DarkGray
             $global:fileStatus2 = $global:fileStatusEdited
         }
-        Write-Host "  3. Remote Storage specs   " -NoNewLine; if ($global:fileStatus3 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus3" -ForegroundColor Green } else { Write-Host "$global:fileStatus3" -ForegroundColor Yellow }
+        Write-Host "  3. Remote Storage specs   " -NoNewLine; if ($global:fileStatus3 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus3" -ForegroundColor Green } else { Write-Host "$global:fileStatus3" -ForegroundColor Cyan }
         Write-Host "    $specsStorageRemoteINPUTLocalPath `n" -ForegroundColor DarkGray
-        Write-Host "  4. Network specs          " -NoNewLine; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Yellow }
+        Write-Host "  4. Network specs          " -NoNewLine; if ($global:fileStatus4 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus4" -ForegroundColor Green } else { Write-Host "$global:fileStatus4" -ForegroundColor Cyan }
         Write-Host "    $specsNetworkINPUTLocalPath `n" -ForegroundColor DarkGray
         if ($acceleratorPresent -eq $true) {
-            Write-Host "  5. Accelerator specs      " -NoNewline; if ($global:fileStatus5 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus5" -ForegroundColor Green } else { Write-Host "$global:fileStatus5" -ForegroundColor Yellow }
+            Write-Host "  5. Accelerator specs      " -NoNewline; if ($global:fileStatus5 -eq $global:fileStatusEdited) { Write-Host "$global:fileStatus5" -ForegroundColor Green } else { Write-Host "$global:fileStatus5" -ForegroundColor Cyan }
             Write-Host "    $specsAcceleratorsINPUTLocalPath `n" -ForegroundColor DarkGray
             Write-Host "`nNOTE (Accelerators): The 'Accelerator-Memory-GB section is based on the total memory buffer available to the VM, not the memory per hardware device.`nFor example, if you have 3x 4GB GPUs, you would have 12GB of memory buffer available to the VM." -ForegroundColor DarkYellow
         } else {
@@ -1950,8 +1956,8 @@ if ($scriptOperation -eq "create") {
     Clear-Host
     RenderDataInputStatus
     while ($true) {
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
         Write-Host "Enter numbers '1 - 5' to open the corresponding file in Excel `nEnter 'f' to open the INPUT directory in Explorer `nEnter 'e' to view an example `nEnter 'r' to refresh the edit status `nEnter 'done' when you've finished entering data in all files to continue`n:" -NoNewline
@@ -2056,7 +2062,7 @@ if ($scriptOperation -eq "create") {
                 DelayDots
             } else {
                 $csvData = Import-Csv -Path "$examplesDirectory\example-specs-cpu-memory.csv"
-                Write-Host "`nHere's an example of the file content (in this case, the CPU & Memory file):`n" -ForegroundColor Magenta
+                Write-Host "`nHere's an example of the file content (in this case, the CPU & Memory file):`n" -ForegroundColor Green
                 $longSizeNameLength = ($csvData | ForEach-Object { $_."Size-Name".Length } | Measure-Object -Maximum).Maximum
                 $spacesSizeName = " " * ($longSizeNameLength - 9)
                 $longCpuLength = ($csvData | ForEach-Object { $_."vCPUs".Length } | Measure-Object -Maximum).Maximum
@@ -2095,7 +2101,7 @@ if ($scriptOperation -eq "create") {
                 RenderDataInputStatus
             } else {
                 Write-Host "`nAll files have been edited!" -ForegroundColor Green
-                Write-Host "`nWARNING: Make sure to close all editors before continuing. `nIf you continue while the files are still open, you will encounter errors and the script will fail!" -ForegroundColor Red
+                Write-Host "`nWARNING: Make sure to close all editors before continuing. `nIf you continue while the files are still open, you will encounter errors and the script will fail!" -ForegroundColor Yellow
                 Read-Host "`nAfter ensuring all editor windows are closed, press Enter to continue`n"
                 Clear-Host
                 break
@@ -2119,11 +2125,11 @@ if ($scriptOperation -eq "create") {
         Clear-Host
         Write-Host "SUMMARY INPUT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
         Write-Host "Now we'll enter the data for the ${seriesBaseName} series' summary.`n"
-        Write-Host "Fill out the " -NoNewLine; Write-Host "INPUT-summary_${seriesBaseName}-series.txt" -NoNewLine -ForegroundColor Yellow; Write-Host " file with the size series' summary.`n"
+        Write-Host "Fill out the " -NoNewLine; Write-Host "INPUT-summary_${seriesBaseName}-series.txt" -NoNewLine -ForegroundColor Cyan; Write-Host " file with the size series' summary.`n"
         Write-Host "NOTE: Make sure the summary is a single paragraph of plain text."
 
-        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Red }
-        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Magenta }
+        if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
+        if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n`n" }
 
         Write-Host "Enter 'n' to open the file in Notepad.exe.`nEnter 'f' to open the directory in Explorer.exe.`nEnter 'e' to view an example.`nEnter 'done' when you've finished entering data in the file to continue."
@@ -2152,7 +2158,7 @@ if ($scriptOperation -eq "create") {
                 DelayDots
             } else {
                 $csvData = Import-Csv -Path "$examplesDirectory\example-specs-cpu-memory.csv"
-                Write-Host "`nHere's an example of a summary file:`n" -ForegroundColor Magenta
+                Write-Host "`nHere's an example of a summary file:`n" -ForegroundColor Green
                 $summaryExampleContent = Get-Content -Path $summaryExamplePath -Raw
                 Write-Host $summaryExampleContent
                 Read-Host "`nPress Enter to continue`n"
@@ -2188,7 +2194,7 @@ if ($scriptOperation -eq "create") {
         Write-Host "The file has been edited! Here's the content you've entered:`n"
         Write-Host "  ${seriesSelected} Summary:" -ForegroundColor DarkGray
         Write-Host "    $summaryNewContent"
-        Write-Host "`n`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Red
+        Write-Host "`n`nRemember to " -NoNewLine; Write-Host "close your editor!"-ForegroundColor Yellow
         Write-Host "NOTE: If you continue while the file is still open, you will encounter errors and the script will fail!`n" -ForegroundColor DarkYellow
         Write-Host "If this content looks good, press 'Enter' to continue."
         if ($testMode -eq $true) {
@@ -2206,14 +2212,14 @@ if ($scriptOperation -eq "create") {
 
 } elseif ($scriptOperation -eq "update") {
     # UPDATE OPERATIONS
-    Write-Host "ERROR: Sorry, this script is not yet built to update files...`nPlease restart the script and select a different operation." -ForegroundColor Red
+    Write-Host "ERROR: Sorry, this script is not yet built to update files...`nPlease restart the script and select a different operation." -ForegroundColor Yellow
     return
 } elseif ($scriptOperation -eq "retire") {
     # RETIRE OPERATIONS
-    Write-Host "ERROR: Sorry, this script is not yet built to retire files...`nPlease restart the script and select a different operation." -ForegroundColor Red
+    Write-Host "ERROR: Sorry, this script is not yet built to retire files...`nPlease restart the script and select a different operation." -ForegroundColor Yellow
     return
 } else {
-    Write-Host "ERROR: Something went wrong... Please restart the script." -ForegroundColor Red
+    Write-Host "ERROR: Something went wrong... Please restart the script." -ForegroundColor Yellow
     return
 }
 
@@ -2308,13 +2314,13 @@ if ($localStoragePresent -eq $true) {
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-Size-GB"; CsvFirstandLastImport
     Write-Host "     - Temp Storage Size (GiB)             : $dataRange"; $specAggLocalDiskSize = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RR-IOPS"; CsvFirstandLastImport
-    Write-Host "     - Temp Random Read Storage IOPS          : $dataRange"; $specAggLocalDiskRRIOPS = $dataRange
+    Write-Host "     - Temp Random Read Disk IOPS          : $dataRange"; $specAggLocalDiskRRIOPS = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RR-MBps"; CsvFirstandLastImport
-    Write-Host "     - Temp Random Read Storage Speed (MBps)  : $dataRange"; $specAggLocalDiskRRSpeed = $dataRange
+    Write-Host "     - Temp Random Read Disk Speed (MBps)  : $dataRange"; $specAggLocalDiskRRSpeed = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-IOPS"; CsvFirstandLastImport
-    Write-Host "     - Temp Random Write Storage IOPS         : $dataRange"; $specAggLocalDiskRWIOPS = $dataRange
+    Write-Host "     - Temp Random Write Disk IOPS         : $dataRange"; $specAggLocalDiskRWIOPS = $dataRange
     $global:csvPath = $specsStorageLocalInputPath; $global:csvColumn = "Local-Disk-RW-MBps"; CsvFirstandLastImport
-    Write-Host "     - Temp Random Write Storage Speed (MBps) : $dataRange"; $specAggLocalDiskRWSpeed = $dataRange
+    Write-Host "     - Temp Random Write Disk Speed (MBps) : $dataRange"; $specAggLocalDiskRWSpeed = $dataRange
 } else {
     Write-Host "  Local Storage:" -ForegroundColor DarkGray
     Write-Host "    No local storage present in this series."
@@ -2324,27 +2330,27 @@ Write-Host "  Remote Storage:" -ForegroundColor DarkGray
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Count"; CsvFirstandLastImport
 Write-Host "     - Max Remote Storage (Qty.)                   : $dataRange"; $specAggRemoteDiskCount = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Storage IOPS                       : $dataRange"; $specAggRemoteDiskIOPS = $dataRange
+Write-Host "     - Uncached Disk IOPS                       : $dataRange"; $specAggRemoteDiskIOPS = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-MBps"; CsvFirstandLastImport
-Write-Host "     - Uncached Storage Speed (MBps)               : $dataRange"; $specAggRemoteDiskSpeed = $dataRange
+Write-Host "     - Uncached Disk Speed (MBps)               : $dataRange"; $specAggRemoteDiskSpeed = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-IOPS"; CsvFirstandLastImport
 Write-Host "     - Uncached Storage Burst IOPS                 : $dataRange"; $specAggRemoteDiskBurstSpeed = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Disk-Burst-MBps"; CsvFirstandLastImport
 Write-Host "     - Uncached Storage Burst Speed (MBps)         : $dataRange"; $specAggRemoteDiskSize = $dataRange
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Special Storage IOPS               : $dataRange"
+Write-Host "     - Uncached Special Disk IOPS               : $dataRange"
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-MBps"; CsvFirstandLastImport
-Write-Host "     - Uncached Special Storage Speed (MBps)       : $dataRange"
+Write-Host "     - Uncached Special Disk Speed (MBps)       : $dataRange"
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-Burst-IOPS"; CsvFirstandLastImport
-Write-Host "     - Uncached Burst Special Storage IOPS         : $dataRange"
+Write-Host "     - Uncached Burst Special Disk IOPS         : $dataRange"
 $global:csvPath = $specsStorageRemoteInputPath; $global:csvColumn = "Remote-Special-Disk-Burst-MBps"; CsvFirstandLastImport
-Write-Host "     - Uncached Burst Special Storage Speed (MBps) : $dataRange"
+Write-Host "     - Uncached Burst Special Disk Speed (MBps) : $dataRange"
 #Network
 Write-Host "  Network:" -ForegroundColor DarkGray
 $global:csvPath = $specsNetworkInputPath; $global:csvColumn = "NIC-count"; CsvFirstandLastImport
 Write-Host "     - Max NICs (Qty.)     : $dataRange"; $specAggNetNicCount = $dataRange
 $global:csvPath = $specsNetworkInputPath; $global:csvColumn = "Bandwidth-Mbps"; CsvFirstandLastImport
-Write-Host "     - Max Bandwidth (Mbps): $dataRange"; $specAggNetBandwidth = $dataRange
+Write-Host "     - Max Network Bandwidth (Mb/s): $dataRange"; $specAggNetBandwidth = $dataRange
 #Accelerators
 if ($acceleratorPresent -eq $true) {
     Write-Host "  Accelerators:" -ForegroundColor DarkGray
@@ -2378,12 +2384,12 @@ while ($true) {
     Write-Host "FINAL FILE CREATION" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
     Write-Host "Now that we have all the necessary data, we'll create the final files for the $seriesSelected series.`n"
     Write-Host "  Files being created:" -ForegroundColor DarkGray
-    Write-Host "    - " -NoNewLine; Write-Host "${createArticleStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Size series article: ${seriesBaseNameLower}-series.md"
-    Write-Host "    - " -NoNewLine; Write-Host "${createSummaryStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Summary include: ${seriesBaseNameLower}-series-summary.md"
-    Write-Host "    - " -NoNewline; Write-Host "${createSpecsStatus}" -ForegroundColor Red -NoNewLine; Write-Host "Specs include: ${seriesBaseNameLower}-series-specs"
+    Write-Host "    - " -NoNewLine; Write-Host "${createArticleStatus}" -ForegroundColor Yellow -NoNewLine; Write-Host "Size series article: ${seriesBaseNameLower}-series.md"
+    Write-Host "    - " -NoNewLine; Write-Host "${createSummaryStatus}" -ForegroundColor Yellow -NoNewLine; Write-Host "Summary include: ${seriesBaseNameLower}-series-summary.md"
+    Write-Host "    - " -NoNewline; Write-Host "${createSpecsStatus}" -ForegroundColor Yellow -NoNewLine; Write-Host "Specs include: ${seriesBaseNameLower}-series-specs"
 
-    if ($invalidInput -eq $true) { Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Red }
-    if ($showMessage -eq $true) { Write-Host "`n$showMessageContent`n" -ForegroundColor Magenta }
+    if ($invalidInput -eq $true) { Write-Host "`nERROR: Invalid input.`n" -ForegroundColor Yellow }
+    if ($showMessage -eq $true) { Write-Host "`n$showMessageContent`n" -ForegroundColor Green }
     if ($showMessage -eq $false -and $invalidInput -eq $false) { Write-Host "`n`n" }
 
     Write-Host "Enter a number '1' - '3' to disable a file's creation.`nEnter 'done' to continue creating all enabled files.`n"
@@ -2538,26 +2544,26 @@ if ($doCreateArticle -eq $true) {
     
     #### NETWORK (NIC Info)
     $articleContent = $articleContent -replace "NIC-Count", "Max NICs (Qty.)"
-    $articleContent = $articleContent -replace "Bandwidth-Mbps", "Max Bandwidth (Mbps)"
+    $articleContent = $articleContent -replace "Bandwidth-Mbps", "Max Network Bandwidth (Mb/s)"
 
     #### STORAGE LOCAL (Disk Info)
     $articleContent = $articleContent -replace "Local-Disk-Count", "Max Temp Storage Disks (Qty.)"
     $articleContent = $articleContent -replace "Local-Disk-Size-GB", "Temp Disk Size (GiB)"
     $articleContent = $articleContent -replace "Local-Disk-RW-IOPS", "Temp Disk Random Write (RW)<sup>1</sup> IOPS"
-    $articleContent = $articleContent -replace "Local-Disk-RW-MBps", "Temp Disk Random Write (RW)<sup>1</sup> Speed (MBps)"
+    $articleContent = $articleContent -replace "Local-Disk-RW-MBps", "Temp Disk Random Write (RW)<sup>1</sup> Throughput (MB/s)"
     $articleContent = $articleContent -replace "Local-Disk-RR-IOPS", "Temp Disk Random Read (RR)<sup>1</sup> IOPS"
-    $articleContent = $articleContent -replace "Local-Disk-RR-MBps", "Temp Disk Random Read (RR)<sup>1</sup> Speed (MBps)"
+    $articleContent = $articleContent -replace "Local-Disk-RR-MBps", "Temp Disk Random Read (RR)<sup>1</sup> Throughput (MB/s)"
 
     #### STORAGE REMOTE (Disk Info)
     $articleContent = $articleContent -replace "Remote-Disk-Count", "Max Remote Storage Disks (Qty.)"
-    $articleContent = $articleContent -replace "Remote-Disk-IOPS", "Uncached Disk IOPS"
-    $articleContent = $articleContent -replace "Remote-Disk-MBps", "Uncached Disk Speed (MBps)"
-    $articleContent = $articleContent -replace "Remote-Disk-Burst-IOPS", "Uncached Disk Burst<sup>1</sup> IOPS"
-    $articleContent = $articleContent -replace "Remote-Disk-Burst-MBps", "Uncached Disk Burst<sup>1</sup> Speed (MBps)"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-IOPS", "Uncached Special<sup>2</sup> Disk IOPS"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-MBps", "Uncached Special<sup>2</sup> Disk Speed (MBps)"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-IOPS", "Uncached Burst<sup>1</sup> Special<sup>2</sup> Disk IOPS"
-    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-MBps", "Uncached Burst<sup>1</sup> Special<sup>2</sup> Disk Speed (MBps)"
+    $articleContent = $articleContent -replace "Remote-Disk-IOPS", "Uncached Premium SSD Disk IOPS"
+    $articleContent = $articleContent -replace "Remote-Disk-MBps", "Uncached Premium SSD Throughput (MB/s)"
+    $articleContent = $articleContent -replace "Remote-Disk-Burst-IOPS", "Uncached Premium SSD Burst<sup>1</sup> IOPS"
+    $articleContent = $articleContent -replace "Remote-Disk-Burst-MBps", "Uncached Premium SSD Burst<sup>1</sup> Throughput (MB/s)"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-IOPS", "Uncached Ultra Disk and Premium SSD v2 IOPS"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-MBps", "Uncached Ultra Disk and Premium SSD v2 Throughput (MB/s)"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-IOPS", "Uncached Burst<sup>1</sup> Ultra Disk and Premium SSD v2 IOPS"
+    $articleContent = $articleContent -replace "Remote-Special-Disk-Burst-MBps", "Uncached Burst<sup>1</sup> Ultra Disk and Premium SSD v2 Disk Throughput (MB/s)"
 
     
     #### ACCELERATORS (GPU Info)
@@ -2657,7 +2663,7 @@ if ($userResponse -eq "f") {
 }
 
 if ($batchMode -eq $true) {
-    Write-Host "`nBatch mode is enabled. 'OUTPUT' files will now be moved to the 'BATCH' directory.`n" -ForegroundColor Yellow
+    Write-Host "`nBatch mode is enabled. 'OUTPUT' files will now be moved to the 'BATCH' directory.`n" -ForegroundColor Cyan
     $fileCount = 0
     $inputFiles = Get-ChildItem -Path $outputDirectory -Recurse
     foreach ($file in $inputFiles) {
@@ -2667,15 +2673,15 @@ if ($batchMode -eq $true) {
     Get-ChildItem -Path "$batchDirectory" -Filter ".temp" -Recurse | Remove-Item -Force
     Write-Host "`n$fileCount files moved from OUTPUT to BATCH directory" -ForegroundColor Green
 
-    Write-Host "`nWould you like to run the script again and $scriptOperation another series for the batch operation?`n" -ForegroundColor Yellow
+    Write-Host "`nWould you like to run the script again and $scriptOperation another series for the batch operation?`n" -ForegroundColor Cyan
     $userResponse = Read-Host "Enter 'y' to run again or 'n' to exit"
     if ($userResponse -eq "y") {
-        Write-Host "Restarting script for next series" -ForegroundColor Yellow -NoNewline
+        Write-Host "Restarting script for next series" -ForegroundColor Cyan -NoNewline
         DelayDots
         Clear-Host
         .\sizes_script.ps1
     } else {
-        Write-Host "`nExiting script...`n" -ForegroundColor Yellow
+        Write-Host "`nExiting script...`n" -ForegroundColor Cyan
         exit 0
     }
 
