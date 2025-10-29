@@ -9,3 +9,5 @@ Accelerated Networking,Not Supported,,../../../virtual-network/create-vm-acceler
 Ephemeral OS Disk,Not Supported,,../../ephemeral-os-disks.md
 Nested Virtualization,Not Supported,,/virtualization/hyper-v-on-windows/user-guide/nested-virtualization
 Hibernation,Not Supported,,../../hibernate-resume.md
+Azure Disk Encryption for Linux VMs,Not Supported,,../../../virtual-machines/linux/disk-encryption-linux.md#restrictions
+Azure Disk Encryption for Windows VMs,Not Supported,,../../../virtual-machines/windows/disk-encryption-windows.md#restrictions

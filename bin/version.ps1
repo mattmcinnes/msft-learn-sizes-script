@@ -1,1 +1,1 @@
-$scriptVersion = "Beta 1.8"
+$scriptVersion = "Beta 1.9"
