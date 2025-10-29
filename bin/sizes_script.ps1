@@ -830,13 +830,12 @@ if ($scriptOperation -eq "create") {
 
 
 
-
-
     # DEFINE FEATURES
     $validInput = $true
     $retryCount = 0
     $showMessage = $false
     $csvData = Import-Csv -Path $featureListCSVTempPath
+
     while ($true) {
         Clear-Host
         Write-Host "FEATURE SUPPORT" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
@@ -851,10 +850,12 @@ if ($scriptOperation -eq "create") {
         }
         Write-Host "    $counter. New Feature"
         $maxValidReadEntries = $counter - 1
-        
+        $regexPattern = '^\d+$'  # Ensure only integers (positive numbers)
+
         if ($validInput -eq $false) { Write-Host "`nERROR: ${errorMessage}`n" -ForegroundColor Yellow }
         if ($showMessage -eq $true) { Write-Host "`n${messageText}`n" -ForegroundColor Green }
         if ($showMessage -ne $true -and $validInput -ne $false) { Write-Host "`n" }
+        
         $userResponse = Read-Host "Change the supported status of specific custom component by entering the corresponding number from the list above. `nEnter 'done' to continue with the selected feature support values`n"
 
         ### Actual Input
@@ -868,23 +869,30 @@ if ($scriptOperation -eq "create") {
             $validInput = $false
             $showMessage = $false
             $errorMessage = "Please contact the content dev team to add a new feature."
-        } elseif ($userResponse -match "^[1-$maxValidReadEntries]$") {
-            $selectedFeature = $csvData[$userResponse - 1].'Feature-Name'
-            if ($csvData[$userResponse - 1].'Support-Level' -eq 'Supported') {
-                $csvData[$userResponse - 1].'Support-Level' = 'Not Supported'
+        } elseif ($userResponse -match $regexPattern) {
+            $userResponseInt = [int]$userResponse
+            if ($userResponseInt -ge 1 -and $userResponseInt -le $maxValidReadEntries) {
+                $selectedFeature = $csvData[$userResponseInt - 1].'Feature-Name'
+                if ($csvData[$userResponseInt - 1].'Support-Level' -eq 'Supported') {
+                    $csvData[$userResponseInt - 1].'Support-Level' = 'Not Supported'
+                } else {
+                    $csvData[$userResponseInt - 1].'Support-Level' = 'Supported'
+                }
+                $selectedFeatureStatus = $csvData[$userResponseInt - 1].'Support-Level'
+                $validInput = $true
+                $showMessage = $true
+                $messageText = "$selectedFeature is now $selectedFeatureStatus"
+                $retryCount++
             } else {
-                $csvData[$userResponse - 1].'Support-Level' = 'Supported'
+                $validInput = $false
+                $showMessage = $false
+                $errorMessage = "Invalid input. Please enter a number between 1 and $maxValidReadEntries."
             }
-            $selectedFeatureStatus = $csvData[$userResponse - 1].'Support-Level'
-            $validInput = $true
-            $showMessage = $true
-            $messageText = "$selectedFeature is now $selectedFeatureStatus"
-            $retryCount++
         } else {
             if ($testMode -eq $true) {
                 $validInput = $true
                 $showMessage = $false
-                Write-Host = "Test mode is enabled. Setting defaults..."
+                Write-Host "Test mode is enabled. Setting defaults..."
                 Read-Host "`nPress Enter to continue`n"
                 break
             } else { 
@@ -894,6 +902,7 @@ if ($scriptOperation -eq "create") {
             }
         }
     }
+
 
     # Write the updated CSV data back to the file
     $csvData | Export-Csv -Path $featureListCSVTempPath -NoTypeInformation
@@ -2679,7 +2688,7 @@ if ($batchMode -eq $true) {
         Write-Host "Restarting script for next series" -ForegroundColor Cyan -NoNewline
         DelayDots
         Clear-Host
-        .\sizes_script.ps1
+        .\bin\sizes_script.ps1
     } else {
         Write-Host "`nExiting script...`n" -ForegroundColor Cyan
         exit 0
@@ -2690,66 +2699,66 @@ if ($batchMode -eq $true) {
 
 
 
-# GIT OPERATIONS (pt.1)
-Clear-Host
-Write-Host "GIT OPERATIONS" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
-Write-Host "Before continuing, we'll create a new branch for this script to utilize.`nThis will run several git commands, so make sure you don't have any unsaved work in an open branch.`nAny unsaved work will be stashed."
-Write-Host "`nWARNING: This requires that you have Git installed locally and you've set up PowerShell to use Git commands. `nIf you haven't done this, close the script and manually upload the files from the OUTPUT directory to a new PR.`n" -ForegroundColor DarkRed -BackgroundColor Yellow
-Read-Host "`nPress Enter to run git operations.`n"
+# # GIT OPERATIONS (pt.1)
+# Clear-Host
+# Write-Host "GIT OPERATIONS" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+# Write-Host "Before continuing, we'll create a new branch for this script to utilize.`nThis will run several git commands, so make sure you don't have any unsaved work in an open branch.`nAny unsaved work will be stashed."
+# Write-Host "`nWARNING: This requires that you have Git installed locally and you've set up PowerShell to use Git commands. `nIf you haven't done this, close the script and manually upload the files from the OUTPUT directory to a new PR.`n" -ForegroundColor DarkRed -BackgroundColor Yellow
+# Read-Host "`nPress Enter to run git operations.`n"
 
-## Make sure the user has a valid branch, then check out to it.
-Set-Location $gitDir
-Write-Host "`nStashing content..."
-if ($testMode -eq $true) {
-    Write-Host "`nTesting mode is enabled. The script will not stash, checkout, or pull from the main branch."
-} elseif ($demoMode -eq $true) {
-    Write-Host "`nDemo mode is enabled. The script will not stash, checkout, or pull from the main branch."
-} else {
-    git stash push -m "Content auto-stashed by sizes script while ${scriptOpIng} the ${seriesSelected}."
-    Set-Location -Path $gitDir
-    git checkout main
-    git fetch
-    git pull upstream main
-    git push origin main
-}
+# ## Make sure the user has a valid branch, then check out to it.
+# Set-Location $gitDir
+# Write-Host "`nStashing content..."
+# if ($testMode -eq $true) {
+#     Write-Host "`nTesting mode is enabled. The script will not stash, checkout, or pull from the main branch."
+# } elseif ($demoMode -eq $true) {
+#     Write-Host "`nDemo mode is enabled. The script will not stash, checkout, or pull from the main branch."
+# } else {
+#     git stash push -m "Content auto-stashed by sizes script while ${scriptOpIng} the ${seriesSelected}."
+#     Set-Location -Path $gitDir
+#     git checkout main
+#     git fetch
+#     git pull upstream main
+#     git push origin main
+# }
 
-### Define the branch name and make sure there isn't already one with the same name. Dont do this if in testing mode
-$branchNameBase = "sizes_${seriesSelected}_script-${scriptOperation}"
-$revNum = 0
+# ### Define the branch name and make sure there isn't already one with the same name. Dont do this if in testing mode
+# $branchNameBase = "sizes_${seriesSelected}_script-${scriptOperation}"
+# $revNum = 0
 
-$branchName = $branchNameBase
-$existsInLocal = git branch --list $branchNameBase
-$existsInRemote = git branch --list -r | Select-String "origin/$branchNameBase"
-# Evaluate existence
-while ($existsInLocal -or $existsInRemote) {
-    $revNum++
-    Write-Host "Branch '$branchName' exists. Selecting alternative name..."
-    $branchName = $branchNameBase + ".rev" + $revNum
-    $existsInLocal = git branch --list $branchName
-    $existsInRemote = git branch --list -r | Select-String "origin/$branchName"
-}
+# $branchName = $branchNameBase
+# $existsInLocal = git branch --list $branchNameBase
+# $existsInRemote = git branch --list -r | Select-String "origin/$branchNameBase"
+# # Evaluate existence
+# while ($existsInLocal -or $existsInRemote) {
+#     $revNum++
+#     Write-Host "Branch '$branchName' exists. Selecting alternative name..."
+#     $branchName = $branchNameBase + ".rev" + $revNum
+#     $existsInLocal = git branch --list $branchName
+#     $existsInRemote = git branch --list -r | Select-String "origin/$branchName"
+# }
 
-if ($testMode -eq $false) {
-    ### Run final checkout
-    Write-Host "`nThe automated branch name will be: '$branchName'"
-    Read-Host "`nPress Enter to create the branch..."
-    git checkout -b $branchName
-} else {
-    Write-Host "`nTesting mode is enabled. The script will not create a new branch or create files."
-    Write-Host "`nYour branch WOULD have been called '$branchName' if not in testing mode." -NoNewline
-    DelayDots
-}
+# if ($testMode -eq $false) {
+#     ### Run final checkout
+#     Write-Host "`nThe automated branch name will be: '$branchName'"
+#     Read-Host "`nPress Enter to create the branch..."
+#     git checkout -b $branchName
+# } else {
+#     Write-Host "`nTesting mode is enabled. The script will not create a new branch or create files."
+#     Write-Host "`nYour branch WOULD have been called '$branchName' if not in testing mode." -NoNewline
+#     DelayDots
+# }
 
 
-# GIT OPERATIONS (pt.2)
-Clear-Host
-Write-Host "PUBLISH PULL REQUEST" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
+# # GIT OPERATIONS (pt.2)
+# Clear-Host
+# Write-Host "PUBLISH PULL REQUEST" -BackgroundColor Blue -NoNewline; Write-Host "${scriptModeTitle}`n" -ForegroundColor Green
 
-Write-Host "Now that the files have been created and the branch has been created, we'll push the branch to the repository and create a pull request.`n"
+# Write-Host "Now that the files have been created and the branch has been created, we'll push the branch to the repository and create a pull request.`n"
 
-Write-Host "This is currently disabled since the script is on version $scriptVersion. Feature will be enabled in the beta release.`n"
+# Write-Host "This is currently disabled since the script is on version $scriptVersion. Feature will be enabled in the beta release.`n"
 
-Write-Host "Please manually add the files from the OUTPUT directory to your branch and create a PR via the git CLI...`n"
+# Write-Host "Please manually add the files from the OUTPUT directory to your branch and create a PR via the git CLI...`n"
 
 
 
